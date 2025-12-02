@@ -224,16 +224,16 @@ class WebsiteBuilder:
             
             # 定义所有10个广告单元
             all_ad_units = [
-                {'id': 1, 'slot_id': 'div-gpt-ad-1762511964282-0', 'path': '/22796784223/Netlink/goodluckark.com/banner_1'},
-                {'id': 2, 'slot_id': 'div-gpt-ad-1762511986518-0', 'path': '/22796784223/Netlink/goodluckark.com/banner_2'},
-                {'id': 3, 'slot_id': 'div-gpt-ad-1762512008111-0', 'path': '/22796784223/Netlink/goodluckark.com/banner_3'},
-                {'id': 4, 'slot_id': 'div-gpt-ad-1762512031919-0', 'path': '/22796784223/Netlink/goodluckark.com/banner_4'},
-                {'id': 5, 'slot_id': 'div-gpt-ad-1762512054239-0', 'path': '/22796784223/Netlink/goodluckark.com/banner_5'},
-                {'id': 6, 'slot_id': 'div-gpt-ad-1762512074266-0', 'path': '/22796784223/Netlink/goodluckark.com/banner_in_article_1'},
-                {'id': 7, 'slot_id': 'div-gpt-ad-1762512094799-0', 'path': '/22796784223/Netlink/goodluckark.com/banner_in_article_2'},
-                {'id': 8, 'slot_id': 'div-gpt-ad-1762512119068-0', 'path': '/22796784223/Netlink/goodluckark.com/banner_in_article_3'},
-                {'id': 9, 'slot_id': 'div-gpt-ad-1762512140538-0', 'path': '/22796784223/Netlink/goodluckark.com/banner_in_article_4'},
-                {'id': 10, 'slot_id': 'div-gpt-ad-1762512161163-0', 'path': '/22796784223/Netlink/goodluckark.com/banner_in_article_5'},
+                {'id': 1, 'slot_id': 'div-gpt-ad-1764664077188-0', 'path': '/23329558860/ca-pub-8799837421149750-tag/banner1-23329558860'},
+                {'id': 2, 'slot_id': 'div-gpt-ad-1764664525725-0', 'path': '/23329558860/ca-pub-8799837421149750-tag/banner2-23329558860'},
+                {'id': 3, 'slot_id': 'div-gpt-ad-1764664585496-0', 'path': '/23329558860/ca-pub-8799837421149750-tag/banner3-23329558860'},
+                {'id': 4, 'slot_id': 'div-gpt-ad-1764664622290-0', 'path': '/23329558860/ca-pub-8799837421149750-tag/banner4-23329558860'},
+                {'id': 5, 'slot_id': 'div-gpt-ad-1764664769537-0', 'path': '/23329558860/ca-pub-8799837421149750-tag/banner5-23329558860'},
+                {'id': 6, 'slot_id': 'div-gpt-ad-1764664810936-0', 'path': '/23329558860/ca-pub-8799837421149750-tag/banner6-23329558860'},
+                {'id': 7, 'slot_id': 'div-gpt-ad-1764664846769-0', 'path': '/23329558860/ca-pub-8799837421149750-tag/banner7-23329558860'},
+                {'id': 8, 'slot_id': 'div-gpt-ad-1764664897360-0', 'path': '/23329558860/ca-pub-8799837421149750-tag/banner8-23329558860'},
+                {'id': 9, 'slot_id': 'div-gpt-ad-1764664988772-0', 'path': '/23329558860/ca-pub-8799837421149750-tag/banner9-23329558860'},
+                {'id': 10, 'slot_id': 'div-gpt-ad-1764665034563-0', 'path': '/23329558860/ca-pub-8799837421149750-tag/banner10-23329558860'},
             ]
             
             # 从10个广告单元中随机选择5个（每个页面都不同）
