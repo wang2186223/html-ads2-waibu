@@ -224,8 +224,8 @@ class WebsiteBuilder:
             
             # 定义所有10个广告单元
             all_ad_units = [
-                {'id': 1, 'slot_id': 'div-gpt-ad-1764664077188-0', 'path': '/23329558860/ca-pub-8799837421149750-tag/banner1-23329558860'},
-                {'id': 2, 'slot_id': 'div-gpt-ad-1764664525725-0', 'path': '/23329558860/ca-pub-8799837421149750-tag/banner2-23329558860'},
+                {'id': 1, 'slot_id': 'div-gpt-ad-1764664077188-0', 'path': 'adsbygoogle_direct/banner1-23329558860'},
+                {'id': 2, 'slot_id': 'div-gpt-ad-1764664525725-0', 'path': 'adsbygoogle_direct/banner2-23329558860'},
                 {'id': 3, 'slot_id': 'div-gpt-ad-1764664585496-0', 'path': '/23329558860/ca-pub-8799837421149750-tag/banner3-23329558860'},
                 {'id': 4, 'slot_id': 'div-gpt-ad-1764664622290-0', 'path': '/23329558860/ca-pub-8799837421149750-tag/banner4-23329558860'},
                 {'id': 5, 'slot_id': 'div-gpt-ad-1764664769537-0', 'path': '/23329558860/ca-pub-8799837421149750-tag/banner5-23329558860'},

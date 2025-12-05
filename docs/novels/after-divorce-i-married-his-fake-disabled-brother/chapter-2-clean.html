@@ -40,9 +40,30 @@
     <script>
       window.googletag = window.googletag || {cmd: []};
       googletag.cmd.push(function() {
-        // Define ad slots for the chapter page
-        googletag.defineSlot('/23329558860/ca-pub-8799837421149750-tag/banner1-23329558860', [300, 250], 'div-gpt-ad-1764664077188-0').addService(googletag.pubads());
-        googletag.defineSlot('/23329558860/ca-pub-8799837421149750-tag/banner2-23329558860', [300, 250], 'div-gpt-ad-1764664525725-0').addService(googletag.pubads());
+        // banner1
+        // Google AdSense Direct
+        var ad1 = document.createElement('ins');
+        ad1.className = 'adsbygoogle';
+        ad1.style.display = 'inline-block';
+        ad1.style.width = '300px';
+        ad1.style.height = '250px';
+        ad1.setAttribute('data-ad-client', 'ca-pub-8799837421149750');
+        ad1.setAttribute('data-ad-slot', 'banner1-23329558860');
+        ad1.setAttribute('data-tag-src', 'gamtg');
+        document.body.appendChild(ad1);
+        (adsbygoogle = window.adsbygoogle || []).push({});
+
+        // banner2
+        var ad2 = document.createElement('ins');
+        ad2.className = 'adsbygoogle';
+        ad2.style.display = 'inline-block';
+        ad2.style.width = '300px';
+        ad2.style.height = '250px';
+        ad2.setAttribute('data-ad-client', 'ca-pub-8799837421149750');
+        ad2.setAttribute('data-ad-slot', 'banner2-23329558860');
+        ad2.setAttribute('data-tag-src', 'gamtg');
+        document.body.appendChild(ad2);
+        (adsbygoogle = window.adsbygoogle || []).push({});
         googletag.defineSlot('/23329558860/ca-pub-8799837421149750-tag/banner3-23329558860', [300, 250], 'div-gpt-ad-1764664585496-0').addService(googletag.pubads());
         googletag.defineSlot('/23329558860/ca-pub-8799837421149750-tag/banner4-23329558860', [300, 250], 'div-gpt-ad-1764664622290-0').addService(googletag.pubads());
         googletag.defineSlot('/23329558860/ca-pub-8799837421149750-tag/banner5-23329558860', [300, 250], 'div-gpt-ad-1764664769537-0').addService(googletag.pubads());
