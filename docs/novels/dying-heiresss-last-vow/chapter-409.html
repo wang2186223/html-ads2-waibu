@@ -974,32 +974,10 @@
       gtag('config', 'G-1TFKEB1Q55');
     </script>
     
-    <!-- Google AdSense Direct for banner1 and banner2 -->
+    <!-- Google AdSense Direct for all banners -->
     <script async
          src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle_direct.js?
          client=ca-pub-8799837421149750" crossorigin="anonymous">
-    </script>
-    
-    <!-- Google Publisher Tag (GPT) - 动态加载选中的5个广告单元 -->
-    <script async src="https://securepubads.g.doubleclick.net/tag/js/gpt.js" crossorigin="anonymous"></script>
-    <script>
-      window.googletag = window.googletag || {cmd: []};
-      googletag.cmd.push(function() {
-        // Define ad slots for the chapter page (randomly selected 5 out of 10)
-        
-        googletag.defineSlot('/23329558860/ca-pub-8799837421149750-tag/banner3-23329558860', [300, 250], 'div-gpt-ad-1764664585496-0').addService(googletag.pubads());
-        
-        googletag.defineSlot('/23329558860/ca-pub-8799837421149750-tag/banner5-23329558860', [300, 250], 'div-gpt-ad-1764664769537-0').addService(googletag.pubads());
-        
-        googletag.defineSlot('adsbygoogle_direct/banner2-23329558860', [300, 250], 'div-gpt-ad-1764664525725-0').addService(googletag.pubads());
-        
-        googletag.defineSlot('/23329558860/ca-pub-8799837421149750-tag/banner10-23329558860', [300, 250], 'div-gpt-ad-1764665034563-0').addService(googletag.pubads());
-        
-        googletag.defineSlot('/23329558860/ca-pub-8799837421149750-tag/banner8-23329558860', [300, 250], 'div-gpt-ad-1764664897360-0').addService(googletag.pubads());
-        
-        googletag.pubads().enableSingleRequest();
-        googletag.enableServices();
-      });
     </script>
     
     <!-- Facebook Pixel Code -->
@@ -1364,9 +1342,11 @@
             const checkInterval = setInterval(() => {
                 // 支持Google Publisher Tag广告
                 const gptAds = document.querySelectorAll('[id^="div-gpt-ad-"]');
-                if (gptAds.length > 0) {
+                // 支持AdSense Direct广告
+                const adsenseAds = document.querySelectorAll('.adsbygoogle');
+                if (gptAds.length > 0 || adsenseAds.length > 0) {
                     hasAds = true;
-                    if (CONFIG.debugMode) console.log('[AdClick] ✅ 找到GPT广告');
+                    if (CONFIG.debugMode) console.log('[AdClick] ✅ 找到广告 (GPT:' + gptAds.length + ', AdSense:' + adsenseAds.length + ')');
                     clearInterval(checkInterval);
                 }
             }, 500);
@@ -1398,9 +1378,24 @@
             const totalClicks = incrementClicks();
             const stayDuration = Math.round((Date.now() - pageLoadTime) / 1000);
             
-            // 优先获取GPT广告信息
-            const firstAd = document.querySelector('[id^="div-gpt-ad-"]');
-            const adSlot = firstAd ? firstAd.id : 'unknown';
+            // 优先获取GPT广告信息，其次AdSense Direct
+            let firstAd = document.querySelector('[id^="div-gpt-ad-"]');
+            let adSlot = firstAd ? firstAd.id : '';
+            let adType = 'gpt';
+            
+            if (!firstAd) {
+                firstAd = document.querySelector('.adsbygoogle');
+                if (firstAd) {
+                    adSlot = firstAd.getAttribute('data-ad-slot') || 'adsense-unknown';
+                    adType = 'adsense';
+                }
+            }
+            
+            if (!firstAd) {
+                adSlot = 'no-ad-found';
+                adType = 'none';
+            }
+            
             const adPosition = firstAd ? Math.round(firstAd.getBoundingClientRect().top + window.scrollY) : 0;
             
             const data = {
@@ -2086,20 +2081,32 @@
                 <p>Got caught in the rain without an umbrella. Just as I was about to use my backpack as cover, Adrian showed up. That umbrella had to be a gift from some girl—it had cartoon prints! Okay, fine, he’s good-looking, gets straight A’s, and plays soccer well, but the way girls fawn over him is ridiculous!</p>
                 <p>This passage had been lightly crossed out but remained legible. That umbrella had actually been a deliberate purchase—he thought she’d like the cartoon design, only to realize it backfired.</p>
                 <p>Fate had a funny way of twisting things. With a wry smile, he kept reading until, dozens of pages later, he found the turning point.</p>
-                <!-- adsbygoogle_direct/banner2-23329558860 -->
-                <div id='div-gpt-ad-1764664525725-0' style='min-width: 300px; min-height: 250px;'>
+                <!-- banner6-23329558860 - AdSense Direct -->
+                <div style='text-align:center; margin: 20px 0;'>
+                  <ins class="adsbygoogle"
+                       style="display:inline-block;width:300px;height:250px"
+                       data-ad-client="ca-pub-8799837421149750"
+                       data-ad-slot="banner6-23329558860"
+                       data-tag-src="gamtg">
+                  </ins>
                   <script>
-                    googletag.cmd.push(function() { googletag.display('div-gpt-ad-1764664525725-0'); });
+                       (adsbygoogle = window.adsbygoogle || []).push({});
                   </script>
                 </div>
                 <p>May 5, 2016 - Sunny</p>
                 <p>Shocking! Adrian actually confessed to me! If the sun weren’t still up, I’d think he’d been struck by lightning. But... my heart’s racing so fast. If there really were a deer in my chest, it’d be dead from crashing around by now.</p>
                 <p>He remembered that day clearly. After countless failed attempts to win her over, he’d resorted to a direct confession. Stella’s face had turned tomato-red. Though she hadn’t agreed immediately, her diary betrayed her flustered heart.</p>
                 <p>From then on, his presence filled her entries. She didn’t just write about him—she sketched his profile, simple yet uncannily lifelike.</p>
-                <!-- /23329558860/ca-pub-8799837421149750-tag/banner10-23329558860 -->
-                <div id='div-gpt-ad-1764665034563-0' style='min-width: 300px; min-height: 250px;'>
+                <!-- banner3-23329558860 - AdSense Direct -->
+                <div style='text-align:center; margin: 20px 0;'>
+                  <ins class="adsbygoogle"
+                       style="display:inline-block;width:300px;height:250px"
+                       data-ad-client="ca-pub-8799837421149750"
+                       data-ad-slot="banner3-23329558860"
+                       data-tag-src="gamtg">
+                  </ins>
                   <script>
-                    googletag.cmd.push(function() { googletag.display('div-gpt-ad-1764665034563-0'); });
+                       (adsbygoogle = window.adsbygoogle || []).push({});
                   </script>
                 </div>
                 <p>To let Luna sleep more soundly, he turned off the main light, leaving only the soft glow of a desk lamp. Reading these words in the dim light felt like stepping back into his youth.</p>
@@ -2110,10 +2117,16 @@
                 <p>First date today. Wearing that floral sundress he likes. Hope he says I look pretty.</p>
                 <p>May 20, 2016 - Cloudy</p>
                 <p>Riding on the back of Adrian’s bike is amazing. Worked up the courage to hold his waist. Next time, I’ll hold tighter... and maybe measure his waistline while I’m at it.</p>
-                <!-- /23329558860/ca-pub-8799837421149750-tag/banner8-23329558860 -->
-                <div id='div-gpt-ad-1764664897360-0' style='min-width: 300px; min-height: 250px;'>
+                <!-- banner1-23329558860 - AdSense Direct -->
+                <div style='text-align:center; margin: 20px 0;'>
+                  <ins class="adsbygoogle"
+                       style="display:inline-block;width:300px;height:250px"
+                       data-ad-client="ca-pub-8799837421149750"
+                       data-ad-slot="banner1-23329558860"
+                       data-tag-src="gamtg">
+                  </ins>
                   <script>
-                    googletag.cmd.push(function() { googletag.display('div-gpt-ad-1764664897360-0'); });
+                       (adsbygoogle = window.adsbygoogle || []).push({});
                   </script>
                 </div>
             </div>
@@ -4577,8 +4590,17 @@
             startAdMonitoring() {
                 const checkForAds = () => {
                     // Monitor all GPT ad slots - support multiple banners
-                    const adElements = document.querySelectorAll('[id^="div-gpt-ad-"]');
-                    adElements.forEach(ad => {
+                    const gptAdElements = document.querySelectorAll('[id^="div-gpt-ad-"]');
+                    gptAdElements.forEach(ad => {
+                        if (!ad.dataset.guideMonitored) {
+                            ad.dataset.guideMonitored = 'true';
+                            this.observer.observe(ad);
+                        }
+                    });
+                    
+                    // Monitor all AdSense Direct ad slots
+                    const adsenseAdElements = document.querySelectorAll('.adsbygoogle');
+                    adsenseAdElements.forEach(ad => {
                         if (!ad.dataset.guideMonitored) {
                             ad.dataset.guideMonitored = 'true';
                             this.observer.observe(ad);
@@ -4604,23 +4626,48 @@
                 const rect = adElement.getBoundingClientRect();
                 const isValidHeight = rect.height > 100 && rect.height <= 650;
                 
-                // Update ad fill detection logic - support ADX ad structure and exclude unfilled ads
+                // Detect ad type
+                const isAdSense = adElement.classList.contains('adsbygoogle');
+                const isGPT = adElement.id && adElement.id.startsWith('div-gpt-ad-');
+                
+                // Update ad fill detection logic - support both GPT and AdSense Direct
                 let isFilled = false;
                 
-                // Check if there is a valid iframe (height > 0)
-                const iframe = adElement.querySelector('iframe');
-                if (iframe) {
-                    const iframeRect = iframe.getBoundingClientRect();
-                    isFilled = iframeRect.height > 0;
-                }
-                
-                // If no iframe, check other fill indicators
-                if (!isFilled) {
-                    isFilled = adElement.dataset.adStatus === 'filled' || 
-                              adElement.innerHTML.includes('googleads') ||
-                              (adElement.querySelector('[data-google-container-id]') !== null && 
-                               adElement.querySelector('iframe[title="3rd party ad content"]') !== null) ||
-                              adElement.innerHTML.includes('data-load-complete="true"');
+                if (isAdSense) {
+                    // AdSense Direct detection
+                    // Check data-adsbygoogle-status attribute
+                    isFilled = adElement.getAttribute('data-adsbygoogle-status') === 'done';
+                    
+                    // Or check if iframe exists and has valid height
+                    if (!isFilled) {
+                        const iframe = adElement.querySelector('iframe');
+                        if (iframe) {
+                            const iframeRect = iframe.getBoundingClientRect();
+                            isFilled = iframeRect.height > 0;
+                        }
+                    }
+                    
+                    // Or check data-ad-status
+                    if (!isFilled) {
+                        isFilled = adElement.getAttribute('data-ad-status') === 'filled';
+                    }
+                } else if (isGPT) {
+                    // GPT ad detection (original logic)
+                    // Check if there is a valid iframe (height > 0)
+                    const iframe = adElement.querySelector('iframe');
+                    if (iframe) {
+                        const iframeRect = iframe.getBoundingClientRect();
+                        isFilled = iframeRect.height > 0;
+                    }
+                    
+                    // If no iframe, check other fill indicators
+                    if (!isFilled) {
+                        isFilled = adElement.dataset.adStatus === 'filled' || 
+                                  adElement.innerHTML.includes('googleads') ||
+                                  (adElement.querySelector('[data-google-container-id]') !== null && 
+                                   adElement.querySelector('iframe[title="3rd party ad content"]') !== null) ||
+                                  adElement.innerHTML.includes('data-load-complete="true"');
+                    }
                 }
 
                 // Mark as processed to avoid double counting

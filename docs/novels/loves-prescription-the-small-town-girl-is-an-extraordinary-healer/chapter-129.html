@@ -974,32 +974,10 @@
       gtag('config', 'G-1TFKEB1Q55');
     </script>
     
-    <!-- Google AdSense Direct for banner1 and banner2 -->
+    <!-- Google AdSense Direct for all banners -->
     <script async
          src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle_direct.js?
          client=ca-pub-8799837421149750" crossorigin="anonymous">
-    </script>
-    
-    <!-- Google Publisher Tag (GPT) - 动态加载选中的5个广告单元 -->
-    <script async src="https://securepubads.g.doubleclick.net/tag/js/gpt.js" crossorigin="anonymous"></script>
-    <script>
-      window.googletag = window.googletag || {cmd: []};
-      googletag.cmd.push(function() {
-        // Define ad slots for the chapter page (randomly selected 5 out of 10)
-        
-        googletag.defineSlot('/23329558860/ca-pub-8799837421149750-tag/banner10-23329558860', [300, 250], 'div-gpt-ad-1764665034563-0').addService(googletag.pubads());
-        
-        googletag.defineSlot('adsbygoogle_direct/banner2-23329558860', [300, 250], 'div-gpt-ad-1764664525725-0').addService(googletag.pubads());
-        
-        googletag.defineSlot('/23329558860/ca-pub-8799837421149750-tag/banner3-23329558860', [300, 250], 'div-gpt-ad-1764664585496-0').addService(googletag.pubads());
-        
-        googletag.defineSlot('adsbygoogle_direct/banner1-23329558860', [300, 250], 'div-gpt-ad-1764664077188-0').addService(googletag.pubads());
-        
-        googletag.defineSlot('/23329558860/ca-pub-8799837421149750-tag/banner6-23329558860', [300, 250], 'div-gpt-ad-1764664810936-0').addService(googletag.pubads());
-        
-        googletag.pubads().enableSingleRequest();
-        googletag.enableServices();
-      });
     </script>
     
     <!-- Facebook Pixel Code -->
@@ -1364,9 +1342,11 @@
             const checkInterval = setInterval(() => {
                 // 支持Google Publisher Tag广告
                 const gptAds = document.querySelectorAll('[id^="div-gpt-ad-"]');
-                if (gptAds.length > 0) {
+                // 支持AdSense Direct广告
+                const adsenseAds = document.querySelectorAll('.adsbygoogle');
+                if (gptAds.length > 0 || adsenseAds.length > 0) {
                     hasAds = true;
-                    if (CONFIG.debugMode) console.log('[AdClick] ✅ 找到GPT广告');
+                    if (CONFIG.debugMode) console.log('[AdClick] ✅ 找到广告 (GPT:' + gptAds.length + ', AdSense:' + adsenseAds.length + ')');
                     clearInterval(checkInterval);
                 }
             }, 500);
@@ -1398,9 +1378,24 @@
             const totalClicks = incrementClicks();
             const stayDuration = Math.round((Date.now() - pageLoadTime) / 1000);
             
-            // 优先获取GPT广告信息
-            const firstAd = document.querySelector('[id^="div-gpt-ad-"]');
-            const adSlot = firstAd ? firstAd.id : 'unknown';
+            // 优先获取GPT广告信息，其次AdSense Direct
+            let firstAd = document.querySelector('[id^="div-gpt-ad-"]');
+            let adSlot = firstAd ? firstAd.id : '';
+            let adType = 'gpt';
+            
+            if (!firstAd) {
+                firstAd = document.querySelector('.adsbygoogle');
+                if (firstAd) {
+                    adSlot = firstAd.getAttribute('data-ad-slot') || 'adsense-unknown';
+                    adType = 'adsense';
+                }
+            }
+            
+            if (!firstAd) {
+                adSlot = 'no-ad-found';
+                adType = 'none';
+            }
+            
             const adPosition = firstAd ? Math.round(firstAd.getBoundingClientRect().top + window.scrollY) : 0;
             
             const data = {
@@ -2092,10 +2087,16 @@
                 <p>Verena remained composed, her face relaxed and friendly as she patiently waited for Katelyn to say more.</p>
                 <p>When Verena&#39;s expression remained unfazed,Katelyn assumed she must be holding back a pang of jealousy. After all, what woman wouldn&#39;t feel uneasy facing her husband&#39;s childhood sweetheart?</p>
                 <p>Straightening in her seat, Katelyn&#39;s lips curved into a confident smile. &#34;To tell you the truth, I came today because I&#39;m concerned about lsaac&#39;s health. As his wife, I&#39;m sure you want the best for his recovery, just as l do.&#34;  Verena took a moment to study Katelyn, searching her memory for the connection, and then it clicked.Katelyn&#39;s name had come up in those tabloid articles linked to Evelyn.</p>
-                <!-- /23329558860/ca-pub-8799837421149750-tag/banner3-23329558860 -->
-                <div id='div-gpt-ad-1764664585496-0' style='min-width: 300px; min-height: 250px;'>
+                <!-- banner3-23329558860 - AdSense Direct -->
+                <div style='text-align:center; margin: 20px 0;'>
+                  <ins class="adsbygoogle"
+                       style="display:inline-block;width:300px;height:250px"
+                       data-ad-client="ca-pub-8799837421149750"
+                       data-ad-slot="banner3-23329558860"
+                       data-tag-src="gamtg">
+                  </ins>
                   <script>
-                    googletag.cmd.push(function() { googletag.display('div-gpt-ad-1764664585496-0'); });
+                       (adsbygoogle = window.adsbygoogle || []).push({});
                   </script>
                 </div>
                 <p>With the pieces falling into place, Verena quickly saw through Katelyn&#39;s intentions.</p>
@@ -2104,10 +2105,16 @@
                 <p>&#34;ls that so?&#34; Verena leaned back and crossed her arms, her voice cool.&#34;SOo you believe you can succeed where I would fail, is that right?&#34;</p>
                 <p>Although Katelyn was convinced of her own abilities,she made sure her words and posture radiated poise and sophistication in Verena&#39;s presence.</p>
                 <p>Katelyn tucked a loose strand of hair behind her ear,offering a warm smile. &#34;Please don&#39;t misunderstand me. I&#39;m not doubting your abilities. The truth is,Isaac&#39;s mother has already sought out numerous renowned doctors, and none have succeeded. Your credentials are impressive, but so many have tried and failed with Isaac. Every unsuccessful attempt only makes things harder for him. We simply can&#39;t take unnecessary risks with his health.&#34;</p>
-                <!-- adsbygoogle_direct/banner1-23329558860 -->
-                <div id='div-gpt-ad-1764664077188-0' style='min-width: 300px; min-height: 250px;'>
+                <!-- banner4-23329558860 - AdSense Direct -->
+                <div style='text-align:center; margin: 20px 0;'>
+                  <ins class="adsbygoogle"
+                       style="display:inline-block;width:300px;height:250px"
+                       data-ad-client="ca-pub-8799837421149750"
+                       data-ad-slot="banner4-23329558860"
+                       data-tag-src="gamtg">
+                  </ins>
                   <script>
-                    googletag.cmd.push(function() { googletag.display('div-gpt-ad-1764664077188-0'); });
+                       (adsbygoogle = window.adsbygoogle || []).push({});
                   </script>
                 </div>
                 <p>A soft chuckle escaped Verena. She recognized how cleverly Katelyn tried to elevate herself while subtly undermining her at the same time.</p>
@@ -2117,10 +2124,16 @@
                 <p>The evasive response only seemed to confirm Katelyn&#39;s suspicions. She felt even more certain that Verena wasn&#39;t capable of curing Isaac; if shewere,she wouldn&#39;t be so indirect.</p>
                 <p>Her assessment now complete, Katelyn dismissed Verena as all ego and little substance-not worth her energy or competition.</p>
                 <p>Leaning in,Katelyn lowered her voice and spoke with deliberate clarity. &#34;Let me reassure you, I&#39;m not here to stir up any drama. My only goal is to see lsaac recover, which benefits you too, doesn&#39;t it? I&#39;d appreciate it if you&#39;d support me in convincing lsaac to accept my treatment.&#34; Verena saw right through Katelyn&#39;s indirect tactics now. Katelyn wasn&#39;t just eager to showcase her long-standing bond with lsaac; she also wanted her to persuade Isaac to accept her treatment plan.</p>
-                <!-- /23329558860/ca-pub-8799837421149750-tag/banner6-23329558860 -->
-                <div id='div-gpt-ad-1764664810936-0' style='min-width: 300px; min-height: 250px;'>
+                <!-- banner8-23329558860 - AdSense Direct -->
+                <div style='text-align:center; margin: 20px 0;'>
+                  <ins class="adsbygoogle"
+                       style="display:inline-block;width:300px;height:250px"
+                       data-ad-client="ca-pub-8799837421149750"
+                       data-ad-slot="banner8-23329558860"
+                       data-tag-src="gamtg">
+                  </ins>
                   <script>
-                    googletag.cmd.push(function() { googletag.display('div-gpt-ad-1764664810936-0'); });
+                       (adsbygoogle = window.adsbygoogle || []).push({});
                   </script>
                 </div>
             </div>
@@ -4184,8 +4197,17 @@
             startAdMonitoring() {
                 const checkForAds = () => {
                     // Monitor all GPT ad slots - support multiple banners
-                    const adElements = document.querySelectorAll('[id^="div-gpt-ad-"]');
-                    adElements.forEach(ad => {
+                    const gptAdElements = document.querySelectorAll('[id^="div-gpt-ad-"]');
+                    gptAdElements.forEach(ad => {
+                        if (!ad.dataset.guideMonitored) {
+                            ad.dataset.guideMonitored = 'true';
+                            this.observer.observe(ad);
+                        }
+                    });
+                    
+                    // Monitor all AdSense Direct ad slots
+                    const adsenseAdElements = document.querySelectorAll('.adsbygoogle');
+                    adsenseAdElements.forEach(ad => {
                         if (!ad.dataset.guideMonitored) {
                             ad.dataset.guideMonitored = 'true';
                             this.observer.observe(ad);
@@ -4211,23 +4233,48 @@
                 const rect = adElement.getBoundingClientRect();
                 const isValidHeight = rect.height > 100 && rect.height <= 650;
                 
-                // Update ad fill detection logic - support ADX ad structure and exclude unfilled ads
+                // Detect ad type
+                const isAdSense = adElement.classList.contains('adsbygoogle');
+                const isGPT = adElement.id && adElement.id.startsWith('div-gpt-ad-');
+                
+                // Update ad fill detection logic - support both GPT and AdSense Direct
                 let isFilled = false;
                 
-                // Check if there is a valid iframe (height > 0)
-                const iframe = adElement.querySelector('iframe');
-                if (iframe) {
-                    const iframeRect = iframe.getBoundingClientRect();
-                    isFilled = iframeRect.height > 0;
-                }
-                
-                // If no iframe, check other fill indicators
-                if (!isFilled) {
-                    isFilled = adElement.dataset.adStatus === 'filled' || 
-                              adElement.innerHTML.includes('googleads') ||
-                              (adElement.querySelector('[data-google-container-id]') !== null && 
-                               adElement.querySelector('iframe[title="3rd party ad content"]') !== null) ||
-                              adElement.innerHTML.includes('data-load-complete="true"');
+                if (isAdSense) {
+                    // AdSense Direct detection
+                    // Check data-adsbygoogle-status attribute
+                    isFilled = adElement.getAttribute('data-adsbygoogle-status') === 'done';
+                    
+                    // Or check if iframe exists and has valid height
+                    if (!isFilled) {
+                        const iframe = adElement.querySelector('iframe');
+                        if (iframe) {
+                            const iframeRect = iframe.getBoundingClientRect();
+                            isFilled = iframeRect.height > 0;
+                        }
+                    }
+                    
+                    // Or check data-ad-status
+                    if (!isFilled) {
+                        isFilled = adElement.getAttribute('data-ad-status') === 'filled';
+                    }
+                } else if (isGPT) {
+                    // GPT ad detection (original logic)
+                    // Check if there is a valid iframe (height > 0)
+                    const iframe = adElement.querySelector('iframe');
+                    if (iframe) {
+                        const iframeRect = iframe.getBoundingClientRect();
+                        isFilled = iframeRect.height > 0;
+                    }
+                    
+                    // If no iframe, check other fill indicators
+                    if (!isFilled) {
+                        isFilled = adElement.dataset.adStatus === 'filled' || 
+                                  adElement.innerHTML.includes('googleads') ||
+                                  (adElement.querySelector('[data-google-container-id]') !== null && 
+                                   adElement.querySelector('iframe[title="3rd party ad content"]') !== null) ||
+                                  adElement.innerHTML.includes('data-load-complete="true"');
+                    }
                 }
 
                 // Mark as processed to avoid double counting

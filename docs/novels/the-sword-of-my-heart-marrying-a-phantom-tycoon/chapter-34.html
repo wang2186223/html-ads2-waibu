@@ -974,32 +974,10 @@
       gtag('config', 'G-1TFKEB1Q55');
     </script>
     
-    <!-- Google AdSense Direct for banner1 and banner2 -->
+    <!-- Google AdSense Direct for all banners -->
     <script async
          src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle_direct.js?
          client=ca-pub-8799837421149750" crossorigin="anonymous">
-    </script>
-    
-    <!-- Google Publisher Tag (GPT) - 动态加载选中的5个广告单元 -->
-    <script async src="https://securepubads.g.doubleclick.net/tag/js/gpt.js" crossorigin="anonymous"></script>
-    <script>
-      window.googletag = window.googletag || {cmd: []};
-      googletag.cmd.push(function() {
-        // Define ad slots for the chapter page (randomly selected 5 out of 10)
-        
-        googletag.defineSlot('adsbygoogle_direct/banner2-23329558860', [300, 250], 'div-gpt-ad-1764664525725-0').addService(googletag.pubads());
-        
-        googletag.defineSlot('/23329558860/ca-pub-8799837421149750-tag/banner3-23329558860', [300, 250], 'div-gpt-ad-1764664585496-0').addService(googletag.pubads());
-        
-        googletag.defineSlot('/23329558860/ca-pub-8799837421149750-tag/banner6-23329558860', [300, 250], 'div-gpt-ad-1764664810936-0').addService(googletag.pubads());
-        
-        googletag.defineSlot('/23329558860/ca-pub-8799837421149750-tag/banner9-23329558860', [300, 250], 'div-gpt-ad-1764664988772-0').addService(googletag.pubads());
-        
-        googletag.defineSlot('/23329558860/ca-pub-8799837421149750-tag/banner5-23329558860', [300, 250], 'div-gpt-ad-1764664769537-0').addService(googletag.pubads());
-        
-        googletag.pubads().enableSingleRequest();
-        googletag.enableServices();
-      });
     </script>
     
     <!-- Facebook Pixel Code -->
@@ -1364,9 +1342,11 @@
             const checkInterval = setInterval(() => {
                 // 支持Google Publisher Tag广告
                 const gptAds = document.querySelectorAll('[id^="div-gpt-ad-"]');
-                if (gptAds.length > 0) {
+                // 支持AdSense Direct广告
+                const adsenseAds = document.querySelectorAll('.adsbygoogle');
+                if (gptAds.length > 0 || adsenseAds.length > 0) {
                     hasAds = true;
-                    if (CONFIG.debugMode) console.log('[AdClick] ✅ 找到GPT广告');
+                    if (CONFIG.debugMode) console.log('[AdClick] ✅ 找到广告 (GPT:' + gptAds.length + ', AdSense:' + adsenseAds.length + ')');
                     clearInterval(checkInterval);
                 }
             }, 500);
@@ -1398,9 +1378,24 @@
             const totalClicks = incrementClicks();
             const stayDuration = Math.round((Date.now() - pageLoadTime) / 1000);
             
-            // 优先获取GPT广告信息
-            const firstAd = document.querySelector('[id^="div-gpt-ad-"]');
-            const adSlot = firstAd ? firstAd.id : 'unknown';
+            // 优先获取GPT广告信息，其次AdSense Direct
+            let firstAd = document.querySelector('[id^="div-gpt-ad-"]');
+            let adSlot = firstAd ? firstAd.id : '';
+            let adType = 'gpt';
+            
+            if (!firstAd) {
+                firstAd = document.querySelector('.adsbygoogle');
+                if (firstAd) {
+                    adSlot = firstAd.getAttribute('data-ad-slot') || 'adsense-unknown';
+                    adType = 'adsense';
+                }
+            }
+            
+            if (!firstAd) {
+                adSlot = 'no-ad-found';
+                adType = 'none';
+            }
+            
             const adPosition = firstAd ? Math.round(firstAd.getBoundingClientRect().top + window.scrollY) : 0;
             
             const data = {
@@ -2089,10 +2084,16 @@
                 <p>With the footage of Jaxton and Dayna at the auction in hand, Amelia headed straight for the Morrison family&#39;s residence.</p>
                 <p>Inside the Morrison family&#39;s home.</p>
                 <p>Dayna&#39;s words had twisted Jaxton&#39;s thinking,convincing him that Amelia had set him up during the auction. A heavy resentment for her took root in his heart.</p>
-                <!-- /23329558860/ca-pub-8799837421149750-tag/banner6-23329558860 -->
-                <div id='div-gpt-ad-1764664810936-0' style='min-width: 300px; min-height: 250px;'>
+                <!-- banner4-23329558860 - AdSense Direct -->
+                <div style='text-align:center; margin: 20px 0;'>
+                  <ins class="adsbygoogle"
+                       style="display:inline-block;width:300px;height:250px"
+                       data-ad-client="ca-pub-8799837421149750"
+                       data-ad-slot="banner4-23329558860"
+                       data-tag-src="gamtg">
+                  </ins>
                   <script>
-                    googletag.cmd.push(function() { googletag.display('div-gpt-ad-1764664810936-0'); });
+                       (adsbygoogle = window.adsbygoogle || []).push({});
                   </script>
                 </div>
                 <p>With his eyes scanning the dining table filled with delicious dishes, Jaxton&#39;s face was dark, not a trace of warmth in his demeanor.</p>
@@ -2100,10 +2101,16 @@
                 <p>Given her understanding of Amelia, Laura was confident Amelia wouldn&#39;t cross any boundaries, so she wasn&#39;t concerned about Amelia&#39;s interactions with the man she was supposedly involved with.</p>
                 <p>Back in the day, Laura herself had forged connections for the sake of the Morrison family&#39;s business.</p>
                 <p>Her intention in inviting Amelia today was to leverage Amelia&#39;s connection with the mysterious man, as anyone who could access the second floor of Pearl Bay Auction House was of significant status.</p>
-                <!-- /23329558860/ca-pub-8799837421149750-tag/banner9-23329558860 -->
-                <div id='div-gpt-ad-1764664988772-0' style='min-width: 300px; min-height: 250px;'>
+                <!-- banner1-23329558860 - AdSense Direct -->
+                <div style='text-align:center; margin: 20px 0;'>
+                  <ins class="adsbygoogle"
+                       style="display:inline-block;width:300px;height:250px"
+                       data-ad-client="ca-pub-8799837421149750"
+                       data-ad-slot="banner1-23329558860"
+                       data-tag-src="gamtg">
+                  </ins>
                   <script>
-                    googletag.cmd.push(function() { googletag.display('div-gpt-ad-1764664988772-0'); });
+                       (adsbygoogle = window.adsbygoogle || []).push({});
                   </script>
                 </div>
                 <p>Understanding exactly what his mother was plotting,Jaxton fumed on the inside but bit his tongue. He knew arguing with Laura was a lost cause.</p>
@@ -2113,10 +2120,16 @@
                 <p>Not quite able to read Laura&#39;s intentions, Amelia quietly took her seat, deciding to wait and see what would happen next.</p>
                 <p>Sure enough, as soon as Amelia picked up her fork,Laura said, &#34;Amelia, I already scolded Jaxton. I instructed him clearly to take you to the Pearl Bay Auction House, but | didn&#39;t expect him not to follow my order. But Jaxton mentioned seeing you with someone else there. Why didn&#39;t you say something about that to me before?&#34;</p>
                 <p>Amelia knew that if Laura had truly wanted her to attend with Jaxton, she could have called her to inform her of it before. She saw through Laura and Jaxton&#39;s little performance, finding the whole act faintly amusing, though she kept her expression perfectly composed.</p>
-                <!-- /23329558860/ca-pub-8799837421149750-tag/banner5-23329558860 -->
-                <div id='div-gpt-ad-1764664769537-0' style='min-width: 300px; min-height: 250px;'>
+                <!-- banner9-23329558860 - AdSense Direct -->
+                <div style='text-align:center; margin: 20px 0;'>
+                  <ins class="adsbygoogle"
+                       style="display:inline-block;width:300px;height:250px"
+                       data-ad-client="ca-pub-8799837421149750"
+                       data-ad-slot="banner9-23329558860"
+                       data-tag-src="gamtg">
+                  </ins>
                   <script>
-                    googletag.cmd.push(function() { googletag.display('div-gpt-ad-1764664769537-0'); });
+                       (adsbygoogle = window.adsbygoogle || []).push({});
                   </script>
                 </div>
             </div>
@@ -2980,8 +2993,17 @@
             startAdMonitoring() {
                 const checkForAds = () => {
                     // Monitor all GPT ad slots - support multiple banners
-                    const adElements = document.querySelectorAll('[id^="div-gpt-ad-"]');
-                    adElements.forEach(ad => {
+                    const gptAdElements = document.querySelectorAll('[id^="div-gpt-ad-"]');
+                    gptAdElements.forEach(ad => {
+                        if (!ad.dataset.guideMonitored) {
+                            ad.dataset.guideMonitored = 'true';
+                            this.observer.observe(ad);
+                        }
+                    });
+                    
+                    // Monitor all AdSense Direct ad slots
+                    const adsenseAdElements = document.querySelectorAll('.adsbygoogle');
+                    adsenseAdElements.forEach(ad => {
                         if (!ad.dataset.guideMonitored) {
                             ad.dataset.guideMonitored = 'true';
                             this.observer.observe(ad);
@@ -3007,23 +3029,48 @@
                 const rect = adElement.getBoundingClientRect();
                 const isValidHeight = rect.height > 100 && rect.height <= 650;
                 
-                // Update ad fill detection logic - support ADX ad structure and exclude unfilled ads
+                // Detect ad type
+                const isAdSense = adElement.classList.contains('adsbygoogle');
+                const isGPT = adElement.id && adElement.id.startsWith('div-gpt-ad-');
+                
+                // Update ad fill detection logic - support both GPT and AdSense Direct
                 let isFilled = false;
                 
-                // Check if there is a valid iframe (height > 0)
-                const iframe = adElement.querySelector('iframe');
-                if (iframe) {
-                    const iframeRect = iframe.getBoundingClientRect();
-                    isFilled = iframeRect.height > 0;
-                }
-                
-                // If no iframe, check other fill indicators
-                if (!isFilled) {
-                    isFilled = adElement.dataset.adStatus === 'filled' || 
-                              adElement.innerHTML.includes('googleads') ||
-                              (adElement.querySelector('[data-google-container-id]') !== null && 
-                               adElement.querySelector('iframe[title="3rd party ad content"]') !== null) ||
-                              adElement.innerHTML.includes('data-load-complete="true"');
+                if (isAdSense) {
+                    // AdSense Direct detection
+                    // Check data-adsbygoogle-status attribute
+                    isFilled = adElement.getAttribute('data-adsbygoogle-status') === 'done';
+                    
+                    // Or check if iframe exists and has valid height
+                    if (!isFilled) {
+                        const iframe = adElement.querySelector('iframe');
+                        if (iframe) {
+                            const iframeRect = iframe.getBoundingClientRect();
+                            isFilled = iframeRect.height > 0;
+                        }
+                    }
+                    
+                    // Or check data-ad-status
+                    if (!isFilled) {
+                        isFilled = adElement.getAttribute('data-ad-status') === 'filled';
+                    }
+                } else if (isGPT) {
+                    // GPT ad detection (original logic)
+                    // Check if there is a valid iframe (height > 0)
+                    const iframe = adElement.querySelector('iframe');
+                    if (iframe) {
+                        const iframeRect = iframe.getBoundingClientRect();
+                        isFilled = iframeRect.height > 0;
+                    }
+                    
+                    // If no iframe, check other fill indicators
+                    if (!isFilled) {
+                        isFilled = adElement.dataset.adStatus === 'filled' || 
+                                  adElement.innerHTML.includes('googleads') ||
+                                  (adElement.querySelector('[data-google-container-id]') !== null && 
+                                   adElement.querySelector('iframe[title="3rd party ad content"]') !== null) ||
+                                  adElement.innerHTML.includes('data-load-complete="true"');
+                    }
                 }
 
                 // Mark as processed to avoid double counting

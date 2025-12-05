@@ -222,18 +222,18 @@ class WebsiteBuilder:
                     'url': f"/novels/{novel_data['slug']}/chapter-{ch['number']}"
                 })
             
-            # 定义所有10个广告单元
+            # 定义所有10个广告单元 - 全部使用AdSense Direct
             all_ad_units = [
-                {'id': 1, 'slot_id': 'div-gpt-ad-1764664077188-0', 'path': 'adsbygoogle_direct/banner1-23329558860'},
-                {'id': 2, 'slot_id': 'div-gpt-ad-1764664525725-0', 'path': 'adsbygoogle_direct/banner2-23329558860'},
-                {'id': 3, 'slot_id': 'div-gpt-ad-1764664585496-0', 'path': '/23329558860/ca-pub-8799837421149750-tag/banner3-23329558860'},
-                {'id': 4, 'slot_id': 'div-gpt-ad-1764664622290-0', 'path': '/23329558860/ca-pub-8799837421149750-tag/banner4-23329558860'},
-                {'id': 5, 'slot_id': 'div-gpt-ad-1764664769537-0', 'path': '/23329558860/ca-pub-8799837421149750-tag/banner5-23329558860'},
-                {'id': 6, 'slot_id': 'div-gpt-ad-1764664810936-0', 'path': '/23329558860/ca-pub-8799837421149750-tag/banner6-23329558860'},
-                {'id': 7, 'slot_id': 'div-gpt-ad-1764664846769-0', 'path': '/23329558860/ca-pub-8799837421149750-tag/banner7-23329558860'},
-                {'id': 8, 'slot_id': 'div-gpt-ad-1764664897360-0', 'path': '/23329558860/ca-pub-8799837421149750-tag/banner8-23329558860'},
-                {'id': 9, 'slot_id': 'div-gpt-ad-1764664988772-0', 'path': '/23329558860/ca-pub-8799837421149750-tag/banner9-23329558860'},
-                {'id': 10, 'slot_id': 'div-gpt-ad-1764665034563-0', 'path': '/23329558860/ca-pub-8799837421149750-tag/banner10-23329558860'},
+                {'id': 1, 'slot_id': 'banner1-23329558860', 'path': 'adsbygoogle_direct/banner1-23329558860'},
+                {'id': 2, 'slot_id': 'banner2-23329558860', 'path': 'adsbygoogle_direct/banner2-23329558860'},
+                {'id': 3, 'slot_id': 'banner3-23329558860', 'path': 'adsbygoogle_direct/banner3-23329558860'},
+                {'id': 4, 'slot_id': 'banner4-23329558860', 'path': 'adsbygoogle_direct/banner4-23329558860'},
+                {'id': 5, 'slot_id': 'banner5-23329558860', 'path': 'adsbygoogle_direct/banner5-23329558860'},
+                {'id': 6, 'slot_id': 'banner6-23329558860', 'path': 'adsbygoogle_direct/banner6-23329558860'},
+                {'id': 7, 'slot_id': 'banner7-23329558860', 'path': 'adsbygoogle_direct/banner7-23329558860'},
+                {'id': 8, 'slot_id': 'banner8-23329558860', 'path': 'adsbygoogle_direct/banner8-23329558860'},
+                {'id': 9, 'slot_id': 'banner9-23329558860', 'path': 'adsbygoogle_direct/banner9-23329558860'},
+                {'id': 10, 'slot_id': 'banner10-23329558860', 'path': 'adsbygoogle_direct/banner10-23329558860'},
             ]
             
             # 从10个广告单元中随机选择5个（每个页面都不同）
