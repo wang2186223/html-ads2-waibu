@@ -1342,11 +1342,31 @@
             const checkInterval = setInterval(() => {
                 // 支持Google Publisher Tag广告
                 const gptAds = document.querySelectorAll('[id^="div-gpt-ad-"]');
-                // 支持AdSense Direct广告
+                let validGPTCount = 0;
+                gptAds.forEach(ad => {
+                    const iframe = ad.querySelector('iframe');
+                    if (iframe && iframe.getBoundingClientRect().height > 0) {
+                        validGPTCount++;
+                    }
+                });
+                
+                // 支持AdSense Direct广告 - 必须排除 unfilled
                 const adsenseAds = document.querySelectorAll('.adsbygoogle');
-                if (gptAds.length > 0 || adsenseAds.length > 0) {
+                let validAdSenseCount = 0;
+                adsenseAds.forEach(ad => {
+                    const adStatus = ad.getAttribute('data-ad-status');
+                    // 排除明确标记为 unfilled 的广告
+                    if (adStatus !== 'unfilled') {
+                        const iframe = ad.querySelector('iframe');
+                        if (iframe && iframe.getBoundingClientRect().height > 0) {
+                            validAdSenseCount++;
+                        }
+                    }
+                });
+                
+                if (validGPTCount > 0 || validAdSenseCount > 0) {
                     hasAds = true;
-                    if (CONFIG.debugMode) console.log('[AdClick] ✅ 找到广告 (GPT:' + gptAds.length + ', AdSense:' + adsenseAds.length + ')');
+                    if (CONFIG.debugMode) console.log('[AdClick] ✅ 找到有效广告 (GPT:' + validGPTCount + ', AdSense:' + validAdSenseCount + ')');
                     clearInterval(checkInterval);
                 }
             }, 500);
@@ -1383,11 +1403,28 @@
             let adSlot = firstAd ? firstAd.id : '';
             let adType = 'gpt';
             
+            // 验证 GPT 广告是否有效
+            if (firstAd) {
+                const iframe = firstAd.querySelector('iframe');
+                if (!iframe || iframe.getBoundingClientRect().height === 0) {
+                    firstAd = null;
+                }
+            }
+            
             if (!firstAd) {
-                firstAd = document.querySelector('.adsbygoogle');
-                if (firstAd) {
-                    adSlot = firstAd.getAttribute('data-ad-slot') || 'adsense-unknown';
-                    adType = 'adsense';
+                // 查找有效的 AdSense Direct 广告 - 排除 unfilled
+                const adsenseAds = document.querySelectorAll('.adsbygoogle');
+                for (let ad of adsenseAds) {
+                    const adStatus = ad.getAttribute('data-ad-status');
+                    if (adStatus !== 'unfilled') {
+                        const iframe = ad.querySelector('iframe');
+                        if (iframe && iframe.getBoundingClientRect().height > 0) {
+                            firstAd = ad;
+                            adSlot = ad.getAttribute('data-ad-slot') || 'adsense-unknown';
+                            adType = 'adsense';
+                            break;
+                        }
+                    }
                 }
             }
             
@@ -2081,12 +2118,12 @@
                 <p>Derek forced a smile. His wife, Chloe Dawson, rushed forward, grabbing Luna&#39;s hand. &#34;Sister-in-law! We finally found you!&#34;</p>
                 <p>Luna yanked her hand away. &#34;Chloe, I divorced Darren. Don&#39;t call me that. State your business or leave. We&#39;re busy.&#34;</p>
                 <p>Chloe&#39;s expression soured. She hadn&#39;t expected Luna to be so firm. Switching tactics, she wailed, &#34;Sister-in-law, how can you say that? Even after divorce, there&#39;s still history between you. You shared years together and have three sons. No matter how awful Darren was, you can&#39;t just abandon him now!&#34;</p>
-                <!-- banner3-23329558860 - AdSense Direct -->
+                <!-- banner5-23329558860 - AdSense Direct -->
                 <div style='text-align:center; margin: 20px 0;'>
                   <ins class="adsbygoogle"
                        style="display:inline-block;width:300px;height:250px"
                        data-ad-client="ca-pub-8799837421149750"
-                       data-ad-slot="banner3-23329558860"
+                       data-ad-slot="banner5-23329558860"
                        data-tag-src="gamtg">
                   </ins>
                   <script>
@@ -2097,12 +2134,12 @@
                 <p>She saw right through them—the Lewis family wanted to dump their burdens on her now that Darren was useless.</p>
                 <p>When soft words failed, Chloe snarled, &#34;Luna, don&#39;t push your luck! These boys are still Darren&#39;s blood, aren&#39;t they? Sons should care for their father! And as the eldest, he&#39;s responsible for his mother—that&#39;s the rule! Ethan, Aaron, Samuel—your father and grandmother are here. If you abandon them, heaven will strike you down!&#34;</p>
                 <p>Now Luna understood. They were trying to saddle her sons with these two burdens.</p>
-                <!-- banner6-23329558860 - AdSense Direct -->
+                <!-- banner4-23329558860 - AdSense Direct -->
                 <div style='text-align:center; margin: 20px 0;'>
                   <ins class="adsbygoogle"
                        style="display:inline-block;width:300px;height:250px"
                        data-ad-client="ca-pub-8799837421149750"
-                       data-ad-slot="banner6-23329558860"
+                       data-ad-slot="banner4-23329558860"
                        data-tag-src="gamtg">
                   </ins>
                   <script>
@@ -2114,12 +2151,12 @@
                 <p>These past months had been the best of their lives—no fear of their father beating their mother, no backbreaking labor at the quarry. They ate well, and their mother finally smiled.</p>
                 <p>These leeches wouldn&#39;t ruin their happiness.</p>
                 <p>Ethan planted the pole on the ground, his voice deadly. &#34;Try leaving them here, and I&#39;ll break your legs.&#34;</p>
-                <!-- banner1-23329558860 - AdSense Direct -->
+                <!-- banner2-23329558860 - AdSense Direct -->
                 <div style='text-align:center; margin: 20px 0;'>
                   <ins class="adsbygoogle"
                        style="display:inline-block;width:300px;height:250px"
                        data-ad-client="ca-pub-8799837421149750"
-                       data-ad-slot="banner1-23329558860"
+                       data-ad-slot="banner2-23329558860"
                        data-tag-src="gamtg">
                   </ins>
                   <script>
@@ -4636,21 +4673,23 @@
                 
                 if (isAdSense) {
                     // AdSense Direct detection
-                    // Check data-adsbygoogle-status attribute
-                    isFilled = adElement.getAttribute('data-adsbygoogle-status') === 'done';
+                    // IMPORTANT: Must check both status attributes
+                    const adsbyStatus = adElement.getAttribute('data-adsbygoogle-status');
+                    const adStatus = adElement.getAttribute('data-ad-status');
                     
-                    // Or check if iframe exists and has valid height
-                    if (!isFilled) {
+                    // Explicitly check for unfilled status - this means NO ad
+                    if (adStatus === 'unfilled') {
+                        isFilled = false;
+                    } else if (adsbyStatus === 'done' && adStatus === 'filled') {
+                        // Both status indicators show success
+                        isFilled = true;
+                    } else {
+                        // Fallback: check if iframe exists and has valid height
                         const iframe = adElement.querySelector('iframe');
                         if (iframe) {
                             const iframeRect = iframe.getBoundingClientRect();
                             isFilled = iframeRect.height > 0;
                         }
-                    }
-                    
-                    // Or check data-ad-status
-                    if (!isFilled) {
-                        isFilled = adElement.getAttribute('data-ad-status') === 'filled';
                     }
                 } else if (isGPT) {
                     // GPT ad detection (original logic)

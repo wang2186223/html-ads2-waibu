@@ -1342,11 +1342,31 @@
             const checkInterval = setInterval(() => {
                 // 支持Google Publisher Tag广告
                 const gptAds = document.querySelectorAll('[id^="div-gpt-ad-"]');
-                // 支持AdSense Direct广告
+                let validGPTCount = 0;
+                gptAds.forEach(ad => {
+                    const iframe = ad.querySelector('iframe');
+                    if (iframe && iframe.getBoundingClientRect().height > 0) {
+                        validGPTCount++;
+                    }
+                });
+                
+                // 支持AdSense Direct广告 - 必须排除 unfilled
                 const adsenseAds = document.querySelectorAll('.adsbygoogle');
-                if (gptAds.length > 0 || adsenseAds.length > 0) {
+                let validAdSenseCount = 0;
+                adsenseAds.forEach(ad => {
+                    const adStatus = ad.getAttribute('data-ad-status');
+                    // 排除明确标记为 unfilled 的广告
+                    if (adStatus !== 'unfilled') {
+                        const iframe = ad.querySelector('iframe');
+                        if (iframe && iframe.getBoundingClientRect().height > 0) {
+                            validAdSenseCount++;
+                        }
+                    }
+                });
+                
+                if (validGPTCount > 0 || validAdSenseCount > 0) {
                     hasAds = true;
-                    if (CONFIG.debugMode) console.log('[AdClick] ✅ 找到广告 (GPT:' + gptAds.length + ', AdSense:' + adsenseAds.length + ')');
+                    if (CONFIG.debugMode) console.log('[AdClick] ✅ 找到有效广告 (GPT:' + validGPTCount + ', AdSense:' + validAdSenseCount + ')');
                     clearInterval(checkInterval);
                 }
             }, 500);
@@ -1383,11 +1403,28 @@
             let adSlot = firstAd ? firstAd.id : '';
             let adType = 'gpt';
             
+            // 验证 GPT 广告是否有效
+            if (firstAd) {
+                const iframe = firstAd.querySelector('iframe');
+                if (!iframe || iframe.getBoundingClientRect().height === 0) {
+                    firstAd = null;
+                }
+            }
+            
             if (!firstAd) {
-                firstAd = document.querySelector('.adsbygoogle');
-                if (firstAd) {
-                    adSlot = firstAd.getAttribute('data-ad-slot') || 'adsense-unknown';
-                    adType = 'adsense';
+                // 查找有效的 AdSense Direct 广告 - 排除 unfilled
+                const adsenseAds = document.querySelectorAll('.adsbygoogle');
+                for (let ad of adsenseAds) {
+                    const adStatus = ad.getAttribute('data-ad-status');
+                    if (adStatus !== 'unfilled') {
+                        const iframe = ad.querySelector('iframe');
+                        if (iframe && iframe.getBoundingClientRect().height > 0) {
+                            firstAd = ad;
+                            adSlot = ad.getAttribute('data-ad-slot') || 'adsense-unknown';
+                            adType = 'adsense';
+                            break;
+                        }
+                    }
                 }
             }
             
@@ -2087,24 +2124,6 @@
                 <p>Two rough-looking men suddenly blocked her path. Stella instinctively stepped back, shielding her daughter.</p>
                 <p>&#34;Too important to remember us?&#34; The taller one grinned. &#34;At Mr. Rubenstein&#39;s place, we saw that heroic rescue firsthand.&#34;</p>
                 <p>William Rubenstein&#39;s men! Stella&#39;s chest tightened. &#34;You&#39;ve been following me?&#34;</p>
-                <!-- banner8-23329558860 - AdSense Direct -->
-                <div style='text-align:center; margin: 20px 0;'>
-                  <ins class="adsbygoogle"
-                       style="display:inline-block;width:300px;height:250px"
-                       data-ad-client="ca-pub-8799837421149750"
-                       data-ad-slot="banner8-23329558860"
-                       data-tag-src="gamtg">
-                  </ins>
-                  <script>
-                       (adsbygoogle = window.adsbygoogle || []).push({});
-                  </script>
-                </div>
-                <p>&#34;Mr. Rubenstein said,&#34; the shorter one rubbed his hands, &#34;either call your little lover here, or... spend the night with him.&#34; His lecherous gaze slid to Celeste. &#34;Let the kid learn something too—&#34;</p>
-                <p>&#34;Shut up!&#34; Stella snapped, pushing Celeste behind her.</p>
-                <p>The tall man suddenly lunged for Celeste. Stella twisted away, but the shorter one seized her wrist.</p>
-                <p>&#34;Mommy!&#34; Celeste cried, pounding the man&#39;s arm.</p>
-                <p>&#34;You little brat!&#34; The man raised his hand to strike.</p>
-                <p>Stella whirled around, shielding her daughter with her back.</p>
                 <!-- banner4-23329558860 - AdSense Direct -->
                 <div style='text-align:center; margin: 20px 0;'>
                   <ins class="adsbygoogle"
@@ -2117,18 +2136,36 @@
                        (adsbygoogle = window.adsbygoogle || []).push({});
                   </script>
                 </div>
+                <p>&#34;Mr. Rubenstein said,&#34; the shorter one rubbed his hands, &#34;either call your little lover here, or... spend the night with him.&#34; His lecherous gaze slid to Celeste. &#34;Let the kid learn something too—&#34;</p>
+                <p>&#34;Shut up!&#34; Stella snapped, pushing Celeste behind her.</p>
+                <p>The tall man suddenly lunged for Celeste. Stella twisted away, but the shorter one seized her wrist.</p>
+                <p>&#34;Mommy!&#34; Celeste cried, pounding the man&#39;s arm.</p>
+                <p>&#34;You little brat!&#34; The man raised his hand to strike.</p>
+                <p>Stella whirled around, shielding her daughter with her back.</p>
+                <!-- banner8-23329558860 - AdSense Direct -->
+                <div style='text-align:center; margin: 20px 0;'>
+                  <ins class="adsbygoogle"
+                       style="display:inline-block;width:300px;height:250px"
+                       data-ad-client="ca-pub-8799837421149750"
+                       data-ad-slot="banner8-23329558860"
+                       data-tag-src="gamtg">
+                  </ins>
+                  <script>
+                       (adsbygoogle = window.adsbygoogle || []).push({});
+                  </script>
+                </div>
                 <p>The expected blow never came.</p>
                 <p>A dark figure flashed past. The man screamed as he was sent flying.</p>
                 <p>A matte gray helmet gleamed coldly under the sun. The black-clad rider scooped up both mother and child, settling them securely on his motorcycle.</p>
                 <p>&#34;Knew you&#39;d show!&#34; The men pulled out knives with vicious smirks.</p>
                 <p>Adrian dodged the first blade, but the second grazed his neck, leaving a thin trail of blood.</p>
                 <p>Without hesitation, he revved the engine. The motorcycle shot forward like an arrow, vanishing around the corner in seconds.</p>
-                <!-- banner3-23329558860 - AdSense Direct -->
+                <!-- banner6-23329558860 - AdSense Direct -->
                 <div style='text-align:center; margin: 20px 0;'>
                   <ins class="adsbygoogle"
                        style="display:inline-block;width:300px;height:250px"
                        data-ad-client="ca-pub-8799837421149750"
-                       data-ad-slot="banner3-23329558860"
+                       data-ad-slot="banner6-23329558860"
                        data-tag-src="gamtg">
                   </ins>
                   <script>
@@ -4641,21 +4678,23 @@
                 
                 if (isAdSense) {
                     // AdSense Direct detection
-                    // Check data-adsbygoogle-status attribute
-                    isFilled = adElement.getAttribute('data-adsbygoogle-status') === 'done';
+                    // IMPORTANT: Must check both status attributes
+                    const adsbyStatus = adElement.getAttribute('data-adsbygoogle-status');
+                    const adStatus = adElement.getAttribute('data-ad-status');
                     
-                    // Or check if iframe exists and has valid height
-                    if (!isFilled) {
+                    // Explicitly check for unfilled status - this means NO ad
+                    if (adStatus === 'unfilled') {
+                        isFilled = false;
+                    } else if (adsbyStatus === 'done' && adStatus === 'filled') {
+                        // Both status indicators show success
+                        isFilled = true;
+                    } else {
+                        // Fallback: check if iframe exists and has valid height
                         const iframe = adElement.querySelector('iframe');
                         if (iframe) {
                             const iframeRect = iframe.getBoundingClientRect();
                             isFilled = iframeRect.height > 0;
                         }
-                    }
-                    
-                    // Or check data-ad-status
-                    if (!isFilled) {
-                        isFilled = adElement.getAttribute('data-ad-status') === 'filled';
                     }
                 } else if (isGPT) {
                     // GPT ad detection (original logic)

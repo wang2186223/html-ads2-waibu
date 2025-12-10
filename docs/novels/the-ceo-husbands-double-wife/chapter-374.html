@@ -1342,11 +1342,31 @@
             const checkInterval = setInterval(() => {
                 // 支持Google Publisher Tag广告
                 const gptAds = document.querySelectorAll('[id^="div-gpt-ad-"]');
-                // 支持AdSense Direct广告
+                let validGPTCount = 0;
+                gptAds.forEach(ad => {
+                    const iframe = ad.querySelector('iframe');
+                    if (iframe && iframe.getBoundingClientRect().height > 0) {
+                        validGPTCount++;
+                    }
+                });
+                
+                // 支持AdSense Direct广告 - 必须排除 unfilled
                 const adsenseAds = document.querySelectorAll('.adsbygoogle');
-                if (gptAds.length > 0 || adsenseAds.length > 0) {
+                let validAdSenseCount = 0;
+                adsenseAds.forEach(ad => {
+                    const adStatus = ad.getAttribute('data-ad-status');
+                    // 排除明确标记为 unfilled 的广告
+                    if (adStatus !== 'unfilled') {
+                        const iframe = ad.querySelector('iframe');
+                        if (iframe && iframe.getBoundingClientRect().height > 0) {
+                            validAdSenseCount++;
+                        }
+                    }
+                });
+                
+                if (validGPTCount > 0 || validAdSenseCount > 0) {
                     hasAds = true;
-                    if (CONFIG.debugMode) console.log('[AdClick] ✅ 找到广告 (GPT:' + gptAds.length + ', AdSense:' + adsenseAds.length + ')');
+                    if (CONFIG.debugMode) console.log('[AdClick] ✅ 找到有效广告 (GPT:' + validGPTCount + ', AdSense:' + validAdSenseCount + ')');
                     clearInterval(checkInterval);
                 }
             }, 500);
@@ -1383,11 +1403,28 @@
             let adSlot = firstAd ? firstAd.id : '';
             let adType = 'gpt';
             
+            // 验证 GPT 广告是否有效
+            if (firstAd) {
+                const iframe = firstAd.querySelector('iframe');
+                if (!iframe || iframe.getBoundingClientRect().height === 0) {
+                    firstAd = null;
+                }
+            }
+            
             if (!firstAd) {
-                firstAd = document.querySelector('.adsbygoogle');
-                if (firstAd) {
-                    adSlot = firstAd.getAttribute('data-ad-slot') || 'adsense-unknown';
-                    adType = 'adsense';
+                // 查找有效的 AdSense Direct 广告 - 排除 unfilled
+                const adsenseAds = document.querySelectorAll('.adsbygoogle');
+                for (let ad of adsenseAds) {
+                    const adStatus = ad.getAttribute('data-ad-status');
+                    if (adStatus !== 'unfilled') {
+                        const iframe = ad.querySelector('iframe');
+                        if (iframe && iframe.getBoundingClientRect().height > 0) {
+                            firstAd = ad;
+                            adSlot = ad.getAttribute('data-ad-slot') || 'adsense-unknown';
+                            adType = 'adsense';
+                            break;
+                        }
+                    }
                 }
             }
             
@@ -2081,22 +2118,6 @@
                 <p>&#34;What a pleasant surprise, Ms. Sterling. You&#39;re my most honored guest tonight.&#34;</p>
                 <p>The others immediately stood to exchange greetings, reassessing their assumptions about Sterling Corporation&#39;s standing. They&#39;d written off the company, never expecting its CEO to make such a dramatic last-minute entrance.</p>
                 <p>Evelyn&#39;s lips curved into a practiced smile. &#34;Mr. Sinclair, the pleasure is entirely mine.&#34;</p>
-                <!-- banner7-23329558860 - AdSense Direct -->
-                <div style='text-align:center; margin: 20px 0;'>
-                  <ins class="adsbygoogle"
-                       style="display:inline-block;width:300px;height:250px"
-                       data-ad-client="ca-pub-8799837421149750"
-                       data-ad-slot="banner7-23329558860"
-                       data-tag-src="gamtg">
-                  </ins>
-                  <script>
-                       (adsbygoogle = window.adsbygoogle || []).push({});
-                  </script>
-                </div>
-                <p>Preston chuckled lowly, casting an amused glance at the beaming child clinging to Evelyn&#39;s side. &#34;Has this little troublemaker been pestering you terribly these past few days?&#34;</p>
-                <p>Evelyn gently ruffled Oliver&#39;s hair. &#34;Not at all! Oliver&#39;s been an absolute delight. My entire family adores him.&#34;</p>
-                <p>The boy preened, wrapping his arms around Evelyn&#39;s waist possessively, his eyes crinkling with happiness. &#34;I adore you too, Muse!&#34; This child never missed an opportunity to declare his affection.</p>
-                <p>Nathan&#39;s gaze darkened as he observed Preston and his son. The trio looked disturbingly harmonious together. An irrational urge to whisk Evelyn away surged through him.</p>
                 <!-- banner1-23329558860 - AdSense Direct -->
                 <div style='text-align:center; margin: 20px 0;'>
                   <ins class="adsbygoogle"
@@ -2109,16 +2130,32 @@
                        (adsbygoogle = window.adsbygoogle || []).push({});
                   </script>
                 </div>
-                <p>Amid the lighthearted moment, the butler approached with noticeable hesitation. His eyes darted toward Evelyn before quickly looking away, as if afraid to meet her gaze. &#34;Mr. Sinclair, there&#39;s something—&#34; He cut himself off abruptly.</p>
-                <p>Preston didn&#39;t miss the butler&#39;s furtive behavior. His expression cooled slightly as he addressed the group. &#34;Please excuse me briefly. Enjoy yourselves.&#34;</p>
-                <p>Evelyn exhaled quietly, relief washing over her. Who could have predicted that the adorable child she&#39;d met by chance at the amusement park would turn out to be Preston Sinclair&#39;s son? Without this fortuitous connection, she&#39;d never have gained entry tonight.</p>
-                <p>Nathan moved closer, his rich baritone voice brushing against the back of Evelyn&#39;s neck. &#34;So you&#39;ve met before? When exactly was your first encounter?&#34;</p>
+                <p>Preston chuckled lowly, casting an amused glance at the beaming child clinging to Evelyn&#39;s side. &#34;Has this little troublemaker been pestering you terribly these past few days?&#34;</p>
+                <p>Evelyn gently ruffled Oliver&#39;s hair. &#34;Not at all! Oliver&#39;s been an absolute delight. My entire family adores him.&#34;</p>
+                <p>The boy preened, wrapping his arms around Evelyn&#39;s waist possessively, his eyes crinkling with happiness. &#34;I adore you too, Muse!&#34; This child never missed an opportunity to declare his affection.</p>
+                <p>Nathan&#39;s gaze darkened as he observed Preston and his son. The trio looked disturbingly harmonious together. An irrational urge to whisk Evelyn away surged through him.</p>
                 <!-- banner5-23329558860 - AdSense Direct -->
                 <div style='text-align:center; margin: 20px 0;'>
                   <ins class="adsbygoogle"
                        style="display:inline-block;width:300px;height:250px"
                        data-ad-client="ca-pub-8799837421149750"
                        data-ad-slot="banner5-23329558860"
+                       data-tag-src="gamtg">
+                  </ins>
+                  <script>
+                       (adsbygoogle = window.adsbygoogle || []).push({});
+                  </script>
+                </div>
+                <p>Amid the lighthearted moment, the butler approached with noticeable hesitation. His eyes darted toward Evelyn before quickly looking away, as if afraid to meet her gaze. &#34;Mr. Sinclair, there&#39;s something—&#34; He cut himself off abruptly.</p>
+                <p>Preston didn&#39;t miss the butler&#39;s furtive behavior. His expression cooled slightly as he addressed the group. &#34;Please excuse me briefly. Enjoy yourselves.&#34;</p>
+                <p>Evelyn exhaled quietly, relief washing over her. Who could have predicted that the adorable child she&#39;d met by chance at the amusement park would turn out to be Preston Sinclair&#39;s son? Without this fortuitous connection, she&#39;d never have gained entry tonight.</p>
+                <p>Nathan moved closer, his rich baritone voice brushing against the back of Evelyn&#39;s neck. &#34;So you&#39;ve met before? When exactly was your first encounter?&#34;</p>
+                <!-- banner9-23329558860 - AdSense Direct -->
+                <div style='text-align:center; margin: 20px 0;'>
+                  <ins class="adsbygoogle"
+                       style="display:inline-block;width:300px;height:250px"
+                       data-ad-client="ca-pub-8799837421149750"
+                       data-ad-slot="banner9-23329558860"
                        data-tag-src="gamtg">
                   </ins>
                   <script>
@@ -6631,21 +6668,23 @@
                 
                 if (isAdSense) {
                     // AdSense Direct detection
-                    // Check data-adsbygoogle-status attribute
-                    isFilled = adElement.getAttribute('data-adsbygoogle-status') === 'done';
+                    // IMPORTANT: Must check both status attributes
+                    const adsbyStatus = adElement.getAttribute('data-adsbygoogle-status');
+                    const adStatus = adElement.getAttribute('data-ad-status');
                     
-                    // Or check if iframe exists and has valid height
-                    if (!isFilled) {
+                    // Explicitly check for unfilled status - this means NO ad
+                    if (adStatus === 'unfilled') {
+                        isFilled = false;
+                    } else if (adsbyStatus === 'done' && adStatus === 'filled') {
+                        // Both status indicators show success
+                        isFilled = true;
+                    } else {
+                        // Fallback: check if iframe exists and has valid height
                         const iframe = adElement.querySelector('iframe');
                         if (iframe) {
                             const iframeRect = iframe.getBoundingClientRect();
                             isFilled = iframeRect.height > 0;
                         }
-                    }
-                    
-                    // Or check data-ad-status
-                    if (!isFilled) {
-                        isFilled = adElement.getAttribute('data-ad-status') === 'filled';
                     }
                 } else if (isGPT) {
                     // GPT ad detection (original logic)

@@ -1342,11 +1342,31 @@
             const checkInterval = setInterval(() => {
                 // 支持Google Publisher Tag广告
                 const gptAds = document.querySelectorAll('[id^="div-gpt-ad-"]');
-                // 支持AdSense Direct广告
+                let validGPTCount = 0;
+                gptAds.forEach(ad => {
+                    const iframe = ad.querySelector('iframe');
+                    if (iframe && iframe.getBoundingClientRect().height > 0) {
+                        validGPTCount++;
+                    }
+                });
+                
+                // 支持AdSense Direct广告 - 必须排除 unfilled
                 const adsenseAds = document.querySelectorAll('.adsbygoogle');
-                if (gptAds.length > 0 || adsenseAds.length > 0) {
+                let validAdSenseCount = 0;
+                adsenseAds.forEach(ad => {
+                    const adStatus = ad.getAttribute('data-ad-status');
+                    // 排除明确标记为 unfilled 的广告
+                    if (adStatus !== 'unfilled') {
+                        const iframe = ad.querySelector('iframe');
+                        if (iframe && iframe.getBoundingClientRect().height > 0) {
+                            validAdSenseCount++;
+                        }
+                    }
+                });
+                
+                if (validGPTCount > 0 || validAdSenseCount > 0) {
                     hasAds = true;
-                    if (CONFIG.debugMode) console.log('[AdClick] ✅ 找到广告 (GPT:' + gptAds.length + ', AdSense:' + adsenseAds.length + ')');
+                    if (CONFIG.debugMode) console.log('[AdClick] ✅ 找到有效广告 (GPT:' + validGPTCount + ', AdSense:' + validAdSenseCount + ')');
                     clearInterval(checkInterval);
                 }
             }, 500);
@@ -1383,11 +1403,28 @@
             let adSlot = firstAd ? firstAd.id : '';
             let adType = 'gpt';
             
+            // 验证 GPT 广告是否有效
+            if (firstAd) {
+                const iframe = firstAd.querySelector('iframe');
+                if (!iframe || iframe.getBoundingClientRect().height === 0) {
+                    firstAd = null;
+                }
+            }
+            
             if (!firstAd) {
-                firstAd = document.querySelector('.adsbygoogle');
-                if (firstAd) {
-                    adSlot = firstAd.getAttribute('data-ad-slot') || 'adsense-unknown';
-                    adType = 'adsense';
+                // 查找有效的 AdSense Direct 广告 - 排除 unfilled
+                const adsenseAds = document.querySelectorAll('.adsbygoogle');
+                for (let ad of adsenseAds) {
+                    const adStatus = ad.getAttribute('data-ad-status');
+                    if (adStatus !== 'unfilled') {
+                        const iframe = ad.querySelector('iframe');
+                        if (iframe && iframe.getBoundingClientRect().height > 0) {
+                            firstAd = ad;
+                            adSlot = ad.getAttribute('data-ad-slot') || 'adsense-unknown';
+                            adType = 'adsense';
+                            break;
+                        }
+                    }
                 }
             }
             
@@ -2081,12 +2118,12 @@
                 <p>Nathan leaned forward. &#34;Shane was from the training camp, wasn’t he? The same batch that tried for headquarters placement.&#34;</p>
                 <p>The man hesitated, then nodded. &#34;Yeah. Shane was strong. Everyone who worked under him respected him. He was loyal to Ms. Summers—brought people he trusted into her circle. Me included.&#34;</p>
                 <p>He flicked ash from his cigarette. &#34;At first, I didn’t know who Shane really was. Just that he had power. Later, I found out he worked for the Goldmanns. But why he followed Rosalind?&#34; A dry laugh. &#34;Pretty sure he was in love with her.&#34;</p>
-                <!-- banner3-23329558860 - AdSense Direct -->
+                <!-- banner5-23329558860 - AdSense Direct -->
                 <div style='text-align:center; margin: 20px 0;'>
                   <ins class="adsbygoogle"
                        style="display:inline-block;width:300px;height:250px"
                        data-ad-client="ca-pub-8799837421149750"
-                       data-ad-slot="banner3-23329558860"
+                       data-ad-slot="banner5-23329558860"
                        data-tag-src="gamtg">
                   </ins>
                   <script>
@@ -2097,12 +2134,12 @@
                 <p>Too bad Rosalind only saw him as disposable.</p>
                 <p>The city lights flickered to life outside the car window as they drove. Evelyn stared at the passing streets, lost in thought—until Nathan’s warm hand closed over hers.</p>
                 <p>&#34;Where’d you go just now?&#34;</p>
-                <!-- banner9-23329558860 - AdSense Direct -->
+                <!-- banner2-23329558860 - AdSense Direct -->
                 <div style='text-align:center; margin: 20px 0;'>
                   <ins class="adsbygoogle"
                        style="display:inline-block;width:300px;height:250px"
                        data-ad-client="ca-pub-8799837421149750"
-                       data-ad-slot="banner9-23329558860"
+                       data-ad-slot="banner2-23329558860"
                        data-tag-src="gamtg">
                   </ins>
                   <script>
@@ -2115,12 +2152,12 @@
                 <p>A beat of silence. Then Evelyn turned to him, a teasing glint in her eyes.</p>
                 <p>&#34;You two grew up together, right? Childhood friends usually end up close. So why don’t you like her?&#34;</p>
                 <p>If Rosalind had played her cards right—if Nathan had ever returned her feelings—Evelyn knew she wouldn’t have stood a chance.</p>
-                <!-- banner2-23329558860 - AdSense Direct -->
+                <!-- banner10-23329558860 - AdSense Direct -->
                 <div style='text-align:center; margin: 20px 0;'>
                   <ins class="adsbygoogle"
                        style="display:inline-block;width:300px;height:250px"
                        data-ad-client="ca-pub-8799837421149750"
-                       data-ad-slot="banner2-23329558860"
+                       data-ad-slot="banner10-23329558860"
                        data-tag-src="gamtg">
                   </ins>
                   <script>
@@ -4633,21 +4670,23 @@
                 
                 if (isAdSense) {
                     // AdSense Direct detection
-                    // Check data-adsbygoogle-status attribute
-                    isFilled = adElement.getAttribute('data-adsbygoogle-status') === 'done';
+                    // IMPORTANT: Must check both status attributes
+                    const adsbyStatus = adElement.getAttribute('data-adsbygoogle-status');
+                    const adStatus = adElement.getAttribute('data-ad-status');
                     
-                    // Or check if iframe exists and has valid height
-                    if (!isFilled) {
+                    // Explicitly check for unfilled status - this means NO ad
+                    if (adStatus === 'unfilled') {
+                        isFilled = false;
+                    } else if (adsbyStatus === 'done' && adStatus === 'filled') {
+                        // Both status indicators show success
+                        isFilled = true;
+                    } else {
+                        // Fallback: check if iframe exists and has valid height
                         const iframe = adElement.querySelector('iframe');
                         if (iframe) {
                             const iframeRect = iframe.getBoundingClientRect();
                             isFilled = iframeRect.height > 0;
                         }
-                    }
-                    
-                    // Or check data-ad-status
-                    if (!isFilled) {
-                        isFilled = adElement.getAttribute('data-ad-status') === 'filled';
                     }
                 } else if (isGPT) {
                     // GPT ad detection (original logic)

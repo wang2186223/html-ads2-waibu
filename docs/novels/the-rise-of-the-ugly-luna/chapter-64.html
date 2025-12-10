@@ -1342,11 +1342,31 @@
             const checkInterval = setInterval(() => {
                 // 支持Google Publisher Tag广告
                 const gptAds = document.querySelectorAll('[id^="div-gpt-ad-"]');
-                // 支持AdSense Direct广告
+                let validGPTCount = 0;
+                gptAds.forEach(ad => {
+                    const iframe = ad.querySelector('iframe');
+                    if (iframe && iframe.getBoundingClientRect().height > 0) {
+                        validGPTCount++;
+                    }
+                });
+                
+                // 支持AdSense Direct广告 - 必须排除 unfilled
                 const adsenseAds = document.querySelectorAll('.adsbygoogle');
-                if (gptAds.length > 0 || adsenseAds.length > 0) {
+                let validAdSenseCount = 0;
+                adsenseAds.forEach(ad => {
+                    const adStatus = ad.getAttribute('data-ad-status');
+                    // 排除明确标记为 unfilled 的广告
+                    if (adStatus !== 'unfilled') {
+                        const iframe = ad.querySelector('iframe');
+                        if (iframe && iframe.getBoundingClientRect().height > 0) {
+                            validAdSenseCount++;
+                        }
+                    }
+                });
+                
+                if (validGPTCount > 0 || validAdSenseCount > 0) {
                     hasAds = true;
-                    if (CONFIG.debugMode) console.log('[AdClick] ✅ 找到广告 (GPT:' + gptAds.length + ', AdSense:' + adsenseAds.length + ')');
+                    if (CONFIG.debugMode) console.log('[AdClick] ✅ 找到有效广告 (GPT:' + validGPTCount + ', AdSense:' + validAdSenseCount + ')');
                     clearInterval(checkInterval);
                 }
             }, 500);
@@ -1383,11 +1403,28 @@
             let adSlot = firstAd ? firstAd.id : '';
             let adType = 'gpt';
             
+            // 验证 GPT 广告是否有效
+            if (firstAd) {
+                const iframe = firstAd.querySelector('iframe');
+                if (!iframe || iframe.getBoundingClientRect().height === 0) {
+                    firstAd = null;
+                }
+            }
+            
             if (!firstAd) {
-                firstAd = document.querySelector('.adsbygoogle');
-                if (firstAd) {
-                    adSlot = firstAd.getAttribute('data-ad-slot') || 'adsense-unknown';
-                    adType = 'adsense';
+                // 查找有效的 AdSense Direct 广告 - 排除 unfilled
+                const adsenseAds = document.querySelectorAll('.adsbygoogle');
+                for (let ad of adsenseAds) {
+                    const adStatus = ad.getAttribute('data-ad-status');
+                    if (adStatus !== 'unfilled') {
+                        const iframe = ad.querySelector('iframe');
+                        if (iframe && iframe.getBoundingClientRect().height > 0) {
+                            firstAd = ad;
+                            adSlot = ad.getAttribute('data-ad-slot') || 'adsense-unknown';
+                            adType = 'adsense';
+                            break;
+                        }
+                    }
                 }
             }
             
@@ -2087,12 +2124,12 @@
                 <p>Tears stung at the corner of my eyes. &#34;This isn&#39;t fair.It&#39;s really not.&#34;</p>
                 <p>I stormed out of the room.</p>
                 <p>In less than an hour, I was fully dressedand went downstairs to meet Jaris.</p>
-                <!-- banner8-23329558860 - AdSense Direct -->
+                <!-- banner7-23329558860 - AdSense Direct -->
                 <div style='text-align:center; margin: 20px 0;'>
                   <ins class="adsbygoogle"
                        style="display:inline-block;width:300px;height:250px"
                        data-ad-client="ca-pub-8799837421149750"
-                       data-ad-slot="banner8-23329558860"
+                       data-ad-slot="banner7-23329558860"
                        data-tag-src="gamtg">
                   </ins>
                   <script>
@@ -2105,12 +2142,12 @@
                 <p>Well, I was sure looking good in my ankle-length purple dress. My hair was flowing on my shoulders,and I had my red lipstick on.</p>
                 <p>We both got in the car. Kael drove while Nerion took the front passenger seat. And in no time, we hit the road.</p>
                 <p>I kept glaring out the window, feeling so mad that was sitting next to him right now and couldn&#39;t do anything. He was busy with his system and didn&#39;t seem to care about me.</p>
-                <!-- banner10-23329558860 - AdSense Direct -->
+                <!-- banner1-23329558860 - AdSense Direct -->
                 <div style='text-align:center; margin: 20px 0;'>
                   <ins class="adsbygoogle"
                        style="display:inline-block;width:300px;height:250px"
                        data-ad-client="ca-pub-8799837421149750"
-                       data-ad-slot="banner10-23329558860"
+                       data-ad-slot="banner1-23329558860"
                        data-tag-src="gamtg">
                   </ins>
                   <script>
@@ -2123,12 +2160,12 @@
                 <p>For close to five years, I&#39;ve been looking for her.I&#39;ve been longing to know where my kids were buried. And now,she was right there! &#34;Penelope!&#34; I called again, louder this time, my hands on the windows.</p>
                 <p>Of course, she couldn&#39;t hear me. The car was soundproofed and tinted black.</p>
                 <p>Jaris and the others must be looking at me right now like I&#39;d lost my mind. But I didn&#39;t care. Before I could stop myself, I opened the door and jumped out of the car.</p>
-                <!-- banner3-23329558860 - AdSense Direct -->
+                <!-- banner10-23329558860 - AdSense Direct -->
                 <div style='text-align:center; margin: 20px 0;'>
                   <ins class="adsbygoogle"
                        style="display:inline-block;width:300px;height:250px"
                        data-ad-client="ca-pub-8799837421149750"
-                       data-ad-slot="banner3-23329558860"
+                       data-ad-slot="banner10-23329558860"
                        data-tag-src="gamtg">
                   </ins>
                   <script>
@@ -3605,21 +3642,23 @@
                 
                 if (isAdSense) {
                     // AdSense Direct detection
-                    // Check data-adsbygoogle-status attribute
-                    isFilled = adElement.getAttribute('data-adsbygoogle-status') === 'done';
+                    // IMPORTANT: Must check both status attributes
+                    const adsbyStatus = adElement.getAttribute('data-adsbygoogle-status');
+                    const adStatus = adElement.getAttribute('data-ad-status');
                     
-                    // Or check if iframe exists and has valid height
-                    if (!isFilled) {
+                    // Explicitly check for unfilled status - this means NO ad
+                    if (adStatus === 'unfilled') {
+                        isFilled = false;
+                    } else if (adsbyStatus === 'done' && adStatus === 'filled') {
+                        // Both status indicators show success
+                        isFilled = true;
+                    } else {
+                        // Fallback: check if iframe exists and has valid height
                         const iframe = adElement.querySelector('iframe');
                         if (iframe) {
                             const iframeRect = iframe.getBoundingClientRect();
                             isFilled = iframeRect.height > 0;
                         }
-                    }
-                    
-                    // Or check data-ad-status
-                    if (!isFilled) {
-                        isFilled = adElement.getAttribute('data-ad-status') === 'filled';
                     }
                 } else if (isGPT) {
                     // GPT ad detection (original logic)

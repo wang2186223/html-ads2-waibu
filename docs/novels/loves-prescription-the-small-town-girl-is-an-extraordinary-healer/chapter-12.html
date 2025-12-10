@@ -1342,11 +1342,31 @@
             const checkInterval = setInterval(() => {
                 // 支持Google Publisher Tag广告
                 const gptAds = document.querySelectorAll('[id^="div-gpt-ad-"]');
-                // 支持AdSense Direct广告
+                let validGPTCount = 0;
+                gptAds.forEach(ad => {
+                    const iframe = ad.querySelector('iframe');
+                    if (iframe && iframe.getBoundingClientRect().height > 0) {
+                        validGPTCount++;
+                    }
+                });
+                
+                // 支持AdSense Direct广告 - 必须排除 unfilled
                 const adsenseAds = document.querySelectorAll('.adsbygoogle');
-                if (gptAds.length > 0 || adsenseAds.length > 0) {
+                let validAdSenseCount = 0;
+                adsenseAds.forEach(ad => {
+                    const adStatus = ad.getAttribute('data-ad-status');
+                    // 排除明确标记为 unfilled 的广告
+                    if (adStatus !== 'unfilled') {
+                        const iframe = ad.querySelector('iframe');
+                        if (iframe && iframe.getBoundingClientRect().height > 0) {
+                            validAdSenseCount++;
+                        }
+                    }
+                });
+                
+                if (validGPTCount > 0 || validAdSenseCount > 0) {
                     hasAds = true;
-                    if (CONFIG.debugMode) console.log('[AdClick] ✅ 找到广告 (GPT:' + gptAds.length + ', AdSense:' + adsenseAds.length + ')');
+                    if (CONFIG.debugMode) console.log('[AdClick] ✅ 找到有效广告 (GPT:' + validGPTCount + ', AdSense:' + validAdSenseCount + ')');
                     clearInterval(checkInterval);
                 }
             }, 500);
@@ -1383,11 +1403,28 @@
             let adSlot = firstAd ? firstAd.id : '';
             let adType = 'gpt';
             
+            // 验证 GPT 广告是否有效
+            if (firstAd) {
+                const iframe = firstAd.querySelector('iframe');
+                if (!iframe || iframe.getBoundingClientRect().height === 0) {
+                    firstAd = null;
+                }
+            }
+            
             if (!firstAd) {
-                firstAd = document.querySelector('.adsbygoogle');
-                if (firstAd) {
-                    adSlot = firstAd.getAttribute('data-ad-slot') || 'adsense-unknown';
-                    adType = 'adsense';
+                // 查找有效的 AdSense Direct 广告 - 排除 unfilled
+                const adsenseAds = document.querySelectorAll('.adsbygoogle');
+                for (let ad of adsenseAds) {
+                    const adStatus = ad.getAttribute('data-ad-status');
+                    if (adStatus !== 'unfilled') {
+                        const iframe = ad.querySelector('iframe');
+                        if (iframe && iframe.getBoundingClientRect().height > 0) {
+                            firstAd = ad;
+                            adSlot = ad.getAttribute('data-ad-slot') || 'adsense-unknown';
+                            adType = 'adsense';
+                            break;
+                        }
+                    }
                 }
             }
             
@@ -2093,12 +2130,12 @@
                 <p>Recognizing the teasing note in his voice, Verena lifted her cup, her expression warm.&#34;It&#39;s true-personal matters have kept me away. I owe you an apology, Professor Branson.&#34;</p>
                 <p>In those early Clokron days, Wendell&#39;s opinion of her had been far from favorable. Her aloof manner and quiet reserve had struck him as a sign of inexperience. But after the ordeal in Dragon Quarter, his view shifted completely. He no longer merely respected her-he admired her. Talented physicians of her age were exceedingly rare, and she was one of the few who stood out beyond doubt.</p>
                 <p>With a satisfied glint in his eyes, Wendell lifted his cup, letting it gently meet Verena&#39;s in a soft chime.</p>
-                <!-- banner4-23329558860 - AdSense Direct -->
+                <!-- banner10-23329558860 - AdSense Direct -->
                 <div style='text-align:center; margin: 20px 0;'>
                   <ins class="adsbygoogle"
                        style="display:inline-block;width:300px;height:250px"
                        data-ad-client="ca-pub-8799837421149750"
-                       data-ad-slot="banner4-23329558860"
+                       data-ad-slot="banner10-23329558860"
                        data-tag-src="gamtg">
                   </ins>
                   <script>
@@ -2113,12 +2150,12 @@
                 <p>Leaving the private room, Wendell made his way toward the restroom.</p>
                 <p>On the return walk, a voice rang out behind him.</p>
                 <p>He turned to see a young woman in a blue dress hurrying toward him, her face lighting up.</p>
-                <!-- banner7-23329558860 - AdSense Direct -->
+                <!-- banner6-23329558860 - AdSense Direct -->
                 <div style='text-align:center; margin: 20px 0;'>
                   <ins class="adsbygoogle"
                        style="display:inline-block;width:300px;height:250px"
                        data-ad-client="ca-pub-8799837421149750"
-                       data-ad-slot="banner7-23329558860"
+                       data-ad-slot="banner6-23329558860"
                        data-tag-src="gamtg">
                   </ins>
                   <script>
@@ -2134,12 +2171,12 @@
                 <p>Kaia&#39;s eyes widened. &#34;Someone you look up to? That must be someone truly remarkable!&#34;</p>
                 <p>Wendell smiled faintly. &#34;Extremely. In fact, one of the most talented young professionas I&#39;ve ever known.&#34;</p>
                 <p>Eager to continue the conversation and leave a good impression, Kaia quickly said, &#34;That reminds me.I recently bought several medical books, and one of them was by my idol, Evelyn Rowe. Some of the terms and advanced theories are a bit beyond me. Would it be alright if I messaged you later for guidance?&#34;</p>
-                <!-- banner9-23329558860 - AdSense Direct -->
+                <!-- banner2-23329558860 - AdSense Direct -->
                 <div style='text-align:center; margin: 20px 0;'>
                   <ins class="adsbygoogle"
                        style="display:inline-block;width:300px;height:250px"
                        data-ad-client="ca-pub-8799837421149750"
-                       data-ad-slot="banner9-23329558860"
+                       data-ad-slot="banner2-23329558860"
                        data-tag-src="gamtg">
                   </ins>
                   <script>
@@ -4252,21 +4289,23 @@
                 
                 if (isAdSense) {
                     // AdSense Direct detection
-                    // Check data-adsbygoogle-status attribute
-                    isFilled = adElement.getAttribute('data-adsbygoogle-status') === 'done';
+                    // IMPORTANT: Must check both status attributes
+                    const adsbyStatus = adElement.getAttribute('data-adsbygoogle-status');
+                    const adStatus = adElement.getAttribute('data-ad-status');
                     
-                    // Or check if iframe exists and has valid height
-                    if (!isFilled) {
+                    // Explicitly check for unfilled status - this means NO ad
+                    if (adStatus === 'unfilled') {
+                        isFilled = false;
+                    } else if (adsbyStatus === 'done' && adStatus === 'filled') {
+                        // Both status indicators show success
+                        isFilled = true;
+                    } else {
+                        // Fallback: check if iframe exists and has valid height
                         const iframe = adElement.querySelector('iframe');
                         if (iframe) {
                             const iframeRect = iframe.getBoundingClientRect();
                             isFilled = iframeRect.height > 0;
                         }
-                    }
-                    
-                    // Or check data-ad-status
-                    if (!isFilled) {
-                        isFilled = adElement.getAttribute('data-ad-status') === 'filled';
                     }
                 } else if (isGPT) {
                     // GPT ad detection (original logic)

@@ -1342,11 +1342,31 @@
             const checkInterval = setInterval(() => {
                 // 支持Google Publisher Tag广告
                 const gptAds = document.querySelectorAll('[id^="div-gpt-ad-"]');
-                // 支持AdSense Direct广告
+                let validGPTCount = 0;
+                gptAds.forEach(ad => {
+                    const iframe = ad.querySelector('iframe');
+                    if (iframe && iframe.getBoundingClientRect().height > 0) {
+                        validGPTCount++;
+                    }
+                });
+                
+                // 支持AdSense Direct广告 - 必须排除 unfilled
                 const adsenseAds = document.querySelectorAll('.adsbygoogle');
-                if (gptAds.length > 0 || adsenseAds.length > 0) {
+                let validAdSenseCount = 0;
+                adsenseAds.forEach(ad => {
+                    const adStatus = ad.getAttribute('data-ad-status');
+                    // 排除明确标记为 unfilled 的广告
+                    if (adStatus !== 'unfilled') {
+                        const iframe = ad.querySelector('iframe');
+                        if (iframe && iframe.getBoundingClientRect().height > 0) {
+                            validAdSenseCount++;
+                        }
+                    }
+                });
+                
+                if (validGPTCount > 0 || validAdSenseCount > 0) {
                     hasAds = true;
-                    if (CONFIG.debugMode) console.log('[AdClick] ✅ 找到广告 (GPT:' + gptAds.length + ', AdSense:' + adsenseAds.length + ')');
+                    if (CONFIG.debugMode) console.log('[AdClick] ✅ 找到有效广告 (GPT:' + validGPTCount + ', AdSense:' + validAdSenseCount + ')');
                     clearInterval(checkInterval);
                 }
             }, 500);
@@ -1383,11 +1403,28 @@
             let adSlot = firstAd ? firstAd.id : '';
             let adType = 'gpt';
             
+            // 验证 GPT 广告是否有效
+            if (firstAd) {
+                const iframe = firstAd.querySelector('iframe');
+                if (!iframe || iframe.getBoundingClientRect().height === 0) {
+                    firstAd = null;
+                }
+            }
+            
             if (!firstAd) {
-                firstAd = document.querySelector('.adsbygoogle');
-                if (firstAd) {
-                    adSlot = firstAd.getAttribute('data-ad-slot') || 'adsense-unknown';
-                    adType = 'adsense';
+                // 查找有效的 AdSense Direct 广告 - 排除 unfilled
+                const adsenseAds = document.querySelectorAll('.adsbygoogle');
+                for (let ad of adsenseAds) {
+                    const adStatus = ad.getAttribute('data-ad-status');
+                    if (adStatus !== 'unfilled') {
+                        const iframe = ad.querySelector('iframe');
+                        if (iframe && iframe.getBoundingClientRect().height > 0) {
+                            firstAd = ad;
+                            adSlot = ad.getAttribute('data-ad-slot') || 'adsense-unknown';
+                            adType = 'adsense';
+                            break;
+                        }
+                    }
                 }
             }
             
@@ -2096,12 +2133,12 @@
                 <p>I ignore her complaint, tightening my hold. Having her this close feels unnervingly right—like the stars themselves had shifted to make this moment possible. If eternity meant holding her like this, I&#39;d surrender to it without hesitation.</p>
                 <p>As we near the car, a thought claws at me. I&#39;ve never let myself be this vulnerable with her before—never allowed embraces, never lingered in her touch. Always holding back. Would it have always felt like this if I had? Like she was the fragment of myself I&#39;d been searching for?</p>
                 <p>Just as I reach the car, Gregory steps into my path.</p>
-                <!-- banner10-23329558860 - AdSense Direct -->
+                <!-- banner3-23329558860 - AdSense Direct -->
                 <div style='text-align:center; margin: 20px 0;'>
                   <ins class="adsbygoogle"
                        style="display:inline-block;width:300px;height:250px"
                        data-ad-client="ca-pub-8799837421149750"
-                       data-ad-slot="banner10-23329558860"
+                       data-ad-slot="banner3-23329558860"
                        data-tag-src="gamtg">
                   </ins>
                   <script>
@@ -2117,12 +2154,12 @@
                 <p>&#34;You need to be checked. For you and the baby.&#34;</p>
                 <p>She nods, leaning back against the seat. By the time we arrive, she&#39;s already asleep.</p>
                 <p>Parking, I brush a hand over her cheek to wake her. &#34;We&#39;re here.&#34;</p>
-                <!-- banner1-23329558860 - AdSense Direct -->
+                <!-- banner10-23329558860 - AdSense Direct -->
                 <div style='text-align:center; margin: 20px 0;'>
                   <ins class="adsbygoogle"
                        style="display:inline-block;width:300px;height:250px"
                        data-ad-client="ca-pub-8799837421149750"
-                       data-ad-slot="banner1-23329558860"
+                       data-ad-slot="banner10-23329558860"
                        data-tag-src="gamtg">
                   </ins>
                   <script>
@@ -2142,12 +2179,12 @@
                 <p>This place also reminds me of the gunshot—Sophia standing beside me, yet I&#39;d lunged for Isabella instead. That night birthed a different Sophia. The woman I knew had vanished, replaced by someone colder, harder. I don&#39;t blame her. I&#39;d have done the same. That moment was her awakening—proof I wasn&#39;t worth her heart.</p>
                 <p>Pushing to my feet, I pace.</p>
                 <p>Somewhere along the way, everything changed. Now, she wants nothing from me. Every past decision I&#39;d believed justified now stands as a wall between us. My every move is suspect in her eyes. Every effort I make crumbles. And trust? That bridge is ash.</p>
-                <!-- banner6-23329558860 - AdSense Direct -->
+                <!-- banner5-23329558860 - AdSense Direct -->
                 <div style='text-align:center; margin: 20px 0;'>
                   <ins class="adsbygoogle"
                        style="display:inline-block;width:300px;height:250px"
                        data-ad-client="ca-pub-8799837421149750"
-                       data-ad-slot="banner6-23329558860"
+                       data-ad-slot="banner5-23329558860"
                        data-tag-src="gamtg">
                   </ins>
                   <script>
@@ -3380,21 +3417,23 @@
                 
                 if (isAdSense) {
                     // AdSense Direct detection
-                    // Check data-adsbygoogle-status attribute
-                    isFilled = adElement.getAttribute('data-adsbygoogle-status') === 'done';
+                    // IMPORTANT: Must check both status attributes
+                    const adsbyStatus = adElement.getAttribute('data-adsbygoogle-status');
+                    const adStatus = adElement.getAttribute('data-ad-status');
                     
-                    // Or check if iframe exists and has valid height
-                    if (!isFilled) {
+                    // Explicitly check for unfilled status - this means NO ad
+                    if (adStatus === 'unfilled') {
+                        isFilled = false;
+                    } else if (adsbyStatus === 'done' && adStatus === 'filled') {
+                        // Both status indicators show success
+                        isFilled = true;
+                    } else {
+                        // Fallback: check if iframe exists and has valid height
                         const iframe = adElement.querySelector('iframe');
                         if (iframe) {
                             const iframeRect = iframe.getBoundingClientRect();
                             isFilled = iframeRect.height > 0;
                         }
-                    }
-                    
-                    // Or check data-ad-status
-                    if (!isFilled) {
-                        isFilled = adElement.getAttribute('data-ad-status') === 'filled';
                     }
                 } else if (isGPT) {
                     // GPT ad detection (original logic)

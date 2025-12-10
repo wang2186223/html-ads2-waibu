@@ -1342,11 +1342,31 @@
             const checkInterval = setInterval(() => {
                 // 支持Google Publisher Tag广告
                 const gptAds = document.querySelectorAll('[id^="div-gpt-ad-"]');
-                // 支持AdSense Direct广告
+                let validGPTCount = 0;
+                gptAds.forEach(ad => {
+                    const iframe = ad.querySelector('iframe');
+                    if (iframe && iframe.getBoundingClientRect().height > 0) {
+                        validGPTCount++;
+                    }
+                });
+                
+                // 支持AdSense Direct广告 - 必须排除 unfilled
                 const adsenseAds = document.querySelectorAll('.adsbygoogle');
-                if (gptAds.length > 0 || adsenseAds.length > 0) {
+                let validAdSenseCount = 0;
+                adsenseAds.forEach(ad => {
+                    const adStatus = ad.getAttribute('data-ad-status');
+                    // 排除明确标记为 unfilled 的广告
+                    if (adStatus !== 'unfilled') {
+                        const iframe = ad.querySelector('iframe');
+                        if (iframe && iframe.getBoundingClientRect().height > 0) {
+                            validAdSenseCount++;
+                        }
+                    }
+                });
+                
+                if (validGPTCount > 0 || validAdSenseCount > 0) {
                     hasAds = true;
-                    if (CONFIG.debugMode) console.log('[AdClick] ✅ 找到广告 (GPT:' + gptAds.length + ', AdSense:' + adsenseAds.length + ')');
+                    if (CONFIG.debugMode) console.log('[AdClick] ✅ 找到有效广告 (GPT:' + validGPTCount + ', AdSense:' + validAdSenseCount + ')');
                     clearInterval(checkInterval);
                 }
             }, 500);
@@ -1383,11 +1403,28 @@
             let adSlot = firstAd ? firstAd.id : '';
             let adType = 'gpt';
             
+            // 验证 GPT 广告是否有效
+            if (firstAd) {
+                const iframe = firstAd.querySelector('iframe');
+                if (!iframe || iframe.getBoundingClientRect().height === 0) {
+                    firstAd = null;
+                }
+            }
+            
             if (!firstAd) {
-                firstAd = document.querySelector('.adsbygoogle');
-                if (firstAd) {
-                    adSlot = firstAd.getAttribute('data-ad-slot') || 'adsense-unknown';
-                    adType = 'adsense';
+                // 查找有效的 AdSense Direct 广告 - 排除 unfilled
+                const adsenseAds = document.querySelectorAll('.adsbygoogle');
+                for (let ad of adsenseAds) {
+                    const adStatus = ad.getAttribute('data-ad-status');
+                    if (adStatus !== 'unfilled') {
+                        const iframe = ad.querySelector('iframe');
+                        if (iframe && iframe.getBoundingClientRect().height > 0) {
+                            firstAd = ad;
+                            adSlot = ad.getAttribute('data-ad-slot') || 'adsense-unknown';
+                            adType = 'adsense';
+                            break;
+                        }
+                    }
                 }
             }
             
@@ -2078,12 +2115,12 @@
                 <p>&#34;I&#39;m covered in scars,&#34; she whispers.</p>
                 <p>&#34;Scars mean you survived,&#34; I remind her, trailing my lips along a jagged line on her ribs. &#34;Now let me worship every single one.&#34;</p>
                 <p>She doesn&#39;t resist as I peel the shirt off completely. My gaze devours her—the curve of her hips, the swell of her breasts, the way her body has softened since she came to me. Every scar tells a story, and I intend to learn them all.</p>
-                <!-- banner5-23329558860 - AdSense Direct -->
+                <!-- banner10-23329558860 - AdSense Direct -->
                 <div style='text-align:center; margin: 20px 0;'>
                   <ins class="adsbygoogle"
                        style="display:inline-block;width:300px;height:250px"
                        data-ad-client="ca-pub-8799837421149750"
-                       data-ad-slot="banner5-23329558860"
+                       data-ad-slot="banner10-23329558860"
                        data-tag-src="gamtg">
                   </ins>
                   <script>
@@ -2093,12 +2130,12 @@
                 <p>I start at her collarbone, kissing downward until I reach her breast. My tongue flicks over her nipple, and her back arches off the bed. Her eyes lock onto mine, pupils blown wide. I suck harder, relishing the way her breath hitches before her eyelids flutter shut. A broken moan escapes her as I switch to her other breast, lavishing it with the same attention.</p>
                 <p>Her hands fist in my hair when I continue my descent. Just as I reach her hipbone, her fingers tug at my shirt. I yank it off in one motion, tossing it aside. &#34;You want me naked too, little mate?&#34;</p>
                 <p>She nods desperately.</p>
-                <!-- banner2-23329558860 - AdSense Direct -->
+                <!-- banner1-23329558860 - AdSense Direct -->
                 <div style='text-align:center; margin: 20px 0;'>
                   <ins class="adsbygoogle"
                        style="display:inline-block;width:300px;height:250px"
                        data-ad-client="ca-pub-8799837421149750"
-                       data-ad-slot="banner2-23329558860"
+                       data-ad-slot="banner1-23329558860"
                        data-tag-src="gamtg">
                   </ins>
                   <script>
@@ -2112,12 +2149,12 @@
                 <p>&#34;Adrian!&#34; she screams as she comes, her walls pulsing around my fingers. The sound of my name on her lips sends me over the edge too. I ride out her pleasure with her, gentling her through the aftershocks before crawling back up her body.</p>
                 <p>When I finally claim her mouth, I let her taste herself on my tongue.</p>
                 <p>&#34;Perfect,&#34; I rasp against her lips. &#34;I could feast on you every damn morning.&#34; The blush that spreads from her cheeks down to her chest is utterly intoxicating. &#34;Come on, little warrior. Time to shower—you&#39;ve got training today.&#34;</p>
-                <!-- banner6-23329558860 - AdSense Direct -->
+                <!-- banner3-23329558860 - AdSense Direct -->
                 <div style='text-align:center; margin: 20px 0;'>
                   <ins class="adsbygoogle"
                        style="display:inline-block;width:300px;height:250px"
                        data-ad-client="ca-pub-8799837421149750"
-                       data-ad-slot="banner6-23329558860"
+                       data-ad-slot="banner3-23329558860"
                        data-tag-src="gamtg">
                   </ins>
                   <script>
@@ -4622,21 +4659,23 @@
                 
                 if (isAdSense) {
                     // AdSense Direct detection
-                    // Check data-adsbygoogle-status attribute
-                    isFilled = adElement.getAttribute('data-adsbygoogle-status') === 'done';
+                    // IMPORTANT: Must check both status attributes
+                    const adsbyStatus = adElement.getAttribute('data-adsbygoogle-status');
+                    const adStatus = adElement.getAttribute('data-ad-status');
                     
-                    // Or check if iframe exists and has valid height
-                    if (!isFilled) {
+                    // Explicitly check for unfilled status - this means NO ad
+                    if (adStatus === 'unfilled') {
+                        isFilled = false;
+                    } else if (adsbyStatus === 'done' && adStatus === 'filled') {
+                        // Both status indicators show success
+                        isFilled = true;
+                    } else {
+                        // Fallback: check if iframe exists and has valid height
                         const iframe = adElement.querySelector('iframe');
                         if (iframe) {
                             const iframeRect = iframe.getBoundingClientRect();
                             isFilled = iframeRect.height > 0;
                         }
-                    }
-                    
-                    // Or check data-ad-status
-                    if (!isFilled) {
-                        isFilled = adElement.getAttribute('data-ad-status') === 'filled';
                     }
                 } else if (isGPT) {
                     // GPT ad detection (original logic)

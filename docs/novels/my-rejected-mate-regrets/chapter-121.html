@@ -1342,11 +1342,31 @@
             const checkInterval = setInterval(() => {
                 // 支持Google Publisher Tag广告
                 const gptAds = document.querySelectorAll('[id^="div-gpt-ad-"]');
-                // 支持AdSense Direct广告
+                let validGPTCount = 0;
+                gptAds.forEach(ad => {
+                    const iframe = ad.querySelector('iframe');
+                    if (iframe && iframe.getBoundingClientRect().height > 0) {
+                        validGPTCount++;
+                    }
+                });
+                
+                // 支持AdSense Direct广告 - 必须排除 unfilled
                 const adsenseAds = document.querySelectorAll('.adsbygoogle');
-                if (gptAds.length > 0 || adsenseAds.length > 0) {
+                let validAdSenseCount = 0;
+                adsenseAds.forEach(ad => {
+                    const adStatus = ad.getAttribute('data-ad-status');
+                    // 排除明确标记为 unfilled 的广告
+                    if (adStatus !== 'unfilled') {
+                        const iframe = ad.querySelector('iframe');
+                        if (iframe && iframe.getBoundingClientRect().height > 0) {
+                            validAdSenseCount++;
+                        }
+                    }
+                });
+                
+                if (validGPTCount > 0 || validAdSenseCount > 0) {
                     hasAds = true;
-                    if (CONFIG.debugMode) console.log('[AdClick] ✅ 找到广告 (GPT:' + gptAds.length + ', AdSense:' + adsenseAds.length + ')');
+                    if (CONFIG.debugMode) console.log('[AdClick] ✅ 找到有效广告 (GPT:' + validGPTCount + ', AdSense:' + validAdSenseCount + ')');
                     clearInterval(checkInterval);
                 }
             }, 500);
@@ -1383,11 +1403,28 @@
             let adSlot = firstAd ? firstAd.id : '';
             let adType = 'gpt';
             
+            // 验证 GPT 广告是否有效
+            if (firstAd) {
+                const iframe = firstAd.querySelector('iframe');
+                if (!iframe || iframe.getBoundingClientRect().height === 0) {
+                    firstAd = null;
+                }
+            }
+            
             if (!firstAd) {
-                firstAd = document.querySelector('.adsbygoogle');
-                if (firstAd) {
-                    adSlot = firstAd.getAttribute('data-ad-slot') || 'adsense-unknown';
-                    adType = 'adsense';
+                // 查找有效的 AdSense Direct 广告 - 排除 unfilled
+                const adsenseAds = document.querySelectorAll('.adsbygoogle');
+                for (let ad of adsenseAds) {
+                    const adStatus = ad.getAttribute('data-ad-status');
+                    if (adStatus !== 'unfilled') {
+                        const iframe = ad.querySelector('iframe');
+                        if (iframe && iframe.getBoundingClientRect().height > 0) {
+                            firstAd = ad;
+                            adSlot = ad.getAttribute('data-ad-slot') || 'adsense-unknown';
+                            adType = 'adsense';
+                            break;
+                        }
+                    }
                 }
             }
             
@@ -2075,20 +2112,6 @@
                 </div>
                 <p>&#34;You heard the stories the other night. You should know a Grey never loses when his heart&#39;s set on something. Isn&#39;t that right, Seraphina?&#34; He turns the same infuriating smirk Adrian wears toward his mate.</p>
                 <p>Seraphina presses her lips together before a reluctant smile breaks through. She meets my eyes. &#34;I&#39;m sorry darling, but Alistair&#39;s right. If I were to place a bet...&#34; Every warrior&#39;s head snaps up like prairie dogs. &#34;I said if I gambled, which I don&#39;t,&#34; The heads drop back down. &#34;I&#39;d have to wager on Adrian this time.&#34;</p>
-                <!-- banner6-23329558860 - AdSense Direct -->
-                <div style='text-align:center; margin: 20px 0;'>
-                  <ins class="adsbygoogle"
-                       style="display:inline-block;width:300px;height:250px"
-                       data-ad-client="ca-pub-8799837421149750"
-                       data-ad-slot="banner6-23329558860"
-                       data-tag-src="gamtg">
-                  </ins>
-                  <script>
-                       (adsbygoogle = window.adsbygoogle || []).push({});
-                  </script>
-                </div>
-                <p>I shake my head in disbelief. &#34;Fine. If everyone&#39;s betting against me, at least make it interesting.&#34; They all turn expectantly. I step out of Adrian&#39;s embrace toward their table. &#34;You really think he&#39;ll take me down that easily? Why not bet on how long it&#39;ll take him to pin me?&#34;</p>
-                <p>Julian&#39;s face lights up. &#34;Genius!&#34; He starts scribbling new odds. Sebastian glances at me. &#34;Has Selene shifted yet?&#34;</p>
                 <!-- banner10-23329558860 - AdSense Direct -->
                 <div style='text-align:center; margin: 20px 0;'>
                   <ins class="adsbygoogle"
@@ -2101,15 +2124,29 @@
                        (adsbygoogle = window.adsbygoogle || []).push({});
                   </script>
                 </div>
-                <p>&#34;Not yet, I-&#34; Selene pushes forward to answer. &#34;Tomorrow, warrior. My first shift comes tomorrow. And if any of you doubt me again, I&#39;ll personally remind you on the training grounds exactly who you&#39;re dealing with.&#34;</p>
-                <p>Every warrior immediately bows their head in deference to Selene. &#34;Our apologies, Selene. It&#39;s just...we know you&#39;re not at full strength yet, and Adrian with Theron have made their intentions clear. No disrespect - we know your power.&#34; They rush to appease her.</p>
-                <p>Only when Adrian&#39;s arms encircle me again does Selene settle. His voice drops an octave as Theron surfaces. &#34;Does this mean we get our run tomorrow, little guardian?&#34;</p>
-                <!-- banner5-23329558860 - AdSense Direct -->
+                <p>I shake my head in disbelief. &#34;Fine. If everyone&#39;s betting against me, at least make it interesting.&#34; They all turn expectantly. I step out of Adrian&#39;s embrace toward their table. &#34;You really think he&#39;ll take me down that easily? Why not bet on how long it&#39;ll take him to pin me?&#34;</p>
+                <p>Julian&#39;s face lights up. &#34;Genius!&#34; He starts scribbling new odds. Sebastian glances at me. &#34;Has Selene shifted yet?&#34;</p>
+                <!-- banner2-23329558860 - AdSense Direct -->
                 <div style='text-align:center; margin: 20px 0;'>
                   <ins class="adsbygoogle"
                        style="display:inline-block;width:300px;height:250px"
                        data-ad-client="ca-pub-8799837421149750"
-                       data-ad-slot="banner5-23329558860"
+                       data-ad-slot="banner2-23329558860"
+                       data-tag-src="gamtg">
+                  </ins>
+                  <script>
+                       (adsbygoogle = window.adsbygoogle || []).push({});
+                  </script>
+                </div>
+                <p>&#34;Not yet, I-&#34; Selene pushes forward to answer. &#34;Tomorrow, warrior. My first shift comes tomorrow. And if any of you doubt me again, I&#39;ll personally remind you on the training grounds exactly who you&#39;re dealing with.&#34;</p>
+                <p>Every warrior immediately bows their head in deference to Selene. &#34;Our apologies, Selene. It&#39;s just...we know you&#39;re not at full strength yet, and Adrian with Theron have made their intentions clear. No disrespect - we know your power.&#34; They rush to appease her.</p>
+                <p>Only when Adrian&#39;s arms encircle me again does Selene settle. His voice drops an octave as Theron surfaces. &#34;Does this mean we get our run tomorrow, little guardian?&#34;</p>
+                <!-- banner3-23329558860 - AdSense Direct -->
+                <div style='text-align:center; margin: 20px 0;'>
+                  <ins class="adsbygoogle"
+                       style="display:inline-block;width:300px;height:250px"
+                       data-ad-client="ca-pub-8799837421149750"
+                       data-ad-slot="banner3-23329558860"
                        data-tag-src="gamtg">
                   </ins>
                   <script>
@@ -4614,21 +4651,23 @@
                 
                 if (isAdSense) {
                     // AdSense Direct detection
-                    // Check data-adsbygoogle-status attribute
-                    isFilled = adElement.getAttribute('data-adsbygoogle-status') === 'done';
+                    // IMPORTANT: Must check both status attributes
+                    const adsbyStatus = adElement.getAttribute('data-adsbygoogle-status');
+                    const adStatus = adElement.getAttribute('data-ad-status');
                     
-                    // Or check if iframe exists and has valid height
-                    if (!isFilled) {
+                    // Explicitly check for unfilled status - this means NO ad
+                    if (adStatus === 'unfilled') {
+                        isFilled = false;
+                    } else if (adsbyStatus === 'done' && adStatus === 'filled') {
+                        // Both status indicators show success
+                        isFilled = true;
+                    } else {
+                        // Fallback: check if iframe exists and has valid height
                         const iframe = adElement.querySelector('iframe');
                         if (iframe) {
                             const iframeRect = iframe.getBoundingClientRect();
                             isFilled = iframeRect.height > 0;
                         }
-                    }
-                    
-                    // Or check data-ad-status
-                    if (!isFilled) {
-                        isFilled = adElement.getAttribute('data-ad-status') === 'filled';
                     }
                 } else if (isGPT) {
                     // GPT ad detection (original logic)

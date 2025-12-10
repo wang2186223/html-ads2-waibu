@@ -1342,11 +1342,31 @@
             const checkInterval = setInterval(() => {
                 // 支持Google Publisher Tag广告
                 const gptAds = document.querySelectorAll('[id^="div-gpt-ad-"]');
-                // 支持AdSense Direct广告
+                let validGPTCount = 0;
+                gptAds.forEach(ad => {
+                    const iframe = ad.querySelector('iframe');
+                    if (iframe && iframe.getBoundingClientRect().height > 0) {
+                        validGPTCount++;
+                    }
+                });
+                
+                // 支持AdSense Direct广告 - 必须排除 unfilled
                 const adsenseAds = document.querySelectorAll('.adsbygoogle');
-                if (gptAds.length > 0 || adsenseAds.length > 0) {
+                let validAdSenseCount = 0;
+                adsenseAds.forEach(ad => {
+                    const adStatus = ad.getAttribute('data-ad-status');
+                    // 排除明确标记为 unfilled 的广告
+                    if (adStatus !== 'unfilled') {
+                        const iframe = ad.querySelector('iframe');
+                        if (iframe && iframe.getBoundingClientRect().height > 0) {
+                            validAdSenseCount++;
+                        }
+                    }
+                });
+                
+                if (validGPTCount > 0 || validAdSenseCount > 0) {
                     hasAds = true;
-                    if (CONFIG.debugMode) console.log('[AdClick] ✅ 找到广告 (GPT:' + gptAds.length + ', AdSense:' + adsenseAds.length + ')');
+                    if (CONFIG.debugMode) console.log('[AdClick] ✅ 找到有效广告 (GPT:' + validGPTCount + ', AdSense:' + validAdSenseCount + ')');
                     clearInterval(checkInterval);
                 }
             }, 500);
@@ -1383,11 +1403,28 @@
             let adSlot = firstAd ? firstAd.id : '';
             let adType = 'gpt';
             
+            // 验证 GPT 广告是否有效
+            if (firstAd) {
+                const iframe = firstAd.querySelector('iframe');
+                if (!iframe || iframe.getBoundingClientRect().height === 0) {
+                    firstAd = null;
+                }
+            }
+            
             if (!firstAd) {
-                firstAd = document.querySelector('.adsbygoogle');
-                if (firstAd) {
-                    adSlot = firstAd.getAttribute('data-ad-slot') || 'adsense-unknown';
-                    adType = 'adsense';
+                // 查找有效的 AdSense Direct 广告 - 排除 unfilled
+                const adsenseAds = document.querySelectorAll('.adsbygoogle');
+                for (let ad of adsenseAds) {
+                    const adStatus = ad.getAttribute('data-ad-status');
+                    if (adStatus !== 'unfilled') {
+                        const iframe = ad.querySelector('iframe');
+                        if (iframe && iframe.getBoundingClientRect().height > 0) {
+                            firstAd = ad;
+                            adSlot = ad.getAttribute('data-ad-slot') || 'adsense-unknown';
+                            adType = 'adsense';
+                            break;
+                        }
+                    }
                 }
             }
             
@@ -2078,12 +2115,12 @@
                 <p>Iris carefully counted. &#34;It’s correct, sis.&#34;</p>
                 <p>Before leaving, Ethan made a point to tell Luna, &#34;I left my number. Call me anytime you need help.&#34; His enthusiasm left no doubt about his feelings.</p>
                 <p>After seeing him off, Luna locked the courtyard gate. With so much cash at home, she wouldn’t have felt safe without her brother around.</p>
-                <!-- banner5-23329558860 - AdSense Direct -->
+                <!-- banner8-23329558860 - AdSense Direct -->
                 <div style='text-align:center; margin: 20px 0;'>
                   <ins class="adsbygoogle"
                        style="display:inline-block;width:300px;height:250px"
                        data-ad-client="ca-pub-8799837421149750"
-                       data-ad-slot="banner5-23329558860"
+                       data-ad-slot="banner8-23329558860"
                        data-tag-src="gamtg">
                   </ins>
                   <script>
@@ -2093,12 +2130,12 @@
                 <p>Iris sidled up to tease her. &#34;Sis, that Mr. Ethan was looking at you a little too warmly!&#34;</p>
                 <p>Luna shot her a warning glance. &#34;Businessmen are like that with everyone. Don’t read too much into it.&#34; Her heart already belonged to someone else—the thought of Ryan made her lips curl into a secret smile.</p>
                 <p>Iris’s curiosity flared. Her sister was definitely hiding something! She’d get the truth out of her tonight. This time, she’d make sure Luna didn’t end up with another scoundrel like Paul Jackson.</p>
-                <!-- banner10-23329558860 - AdSense Direct -->
+                <!-- banner7-23329558860 - AdSense Direct -->
                 <div style='text-align:center; margin: 20px 0;'>
                   <ins class="adsbygoogle"
                        style="display:inline-block;width:300px;height:250px"
                        data-ad-client="ca-pub-8799837421149750"
-                       data-ad-slot="banner10-23329558860"
+                       data-ad-slot="banner7-23329558860"
                        data-tag-src="gamtg">
                   </ins>
                   <script>
@@ -2110,12 +2147,12 @@
                 <p>Luna groaned. &#34;How could I forget? I’ll find a carpenter tomorrow, though I’m not sure if they’ll take jobs this late.&#34;</p>
                 <p>Ethan set down his chopsticks. &#34;I’ll talk to the mayor. With extra pay, we can get it done in a day. I still have my stipend—I’d be happy to help.&#34;</p>
                 <p>The thought of finally celebrating the New Year as a full family warmed his heart. No more lonely holidays—this year, their home would be filled with laughter.</p>
-                <!-- banner2-23329558860 - AdSense Direct -->
+                <!-- banner3-23329558860 - AdSense Direct -->
                 <div style='text-align:center; margin: 20px 0;'>
                   <ins class="adsbygoogle"
                        style="display:inline-block;width:300px;height:250px"
                        data-ad-client="ca-pub-8799837421149750"
-                       data-ad-slot="banner2-23329558860"
+                       data-ad-slot="banner3-23329558860"
                        data-tag-src="gamtg">
                   </ins>
                   <script>
@@ -4632,21 +4669,23 @@
                 
                 if (isAdSense) {
                     // AdSense Direct detection
-                    // Check data-adsbygoogle-status attribute
-                    isFilled = adElement.getAttribute('data-adsbygoogle-status') === 'done';
+                    // IMPORTANT: Must check both status attributes
+                    const adsbyStatus = adElement.getAttribute('data-adsbygoogle-status');
+                    const adStatus = adElement.getAttribute('data-ad-status');
                     
-                    // Or check if iframe exists and has valid height
-                    if (!isFilled) {
+                    // Explicitly check for unfilled status - this means NO ad
+                    if (adStatus === 'unfilled') {
+                        isFilled = false;
+                    } else if (adsbyStatus === 'done' && adStatus === 'filled') {
+                        // Both status indicators show success
+                        isFilled = true;
+                    } else {
+                        // Fallback: check if iframe exists and has valid height
                         const iframe = adElement.querySelector('iframe');
                         if (iframe) {
                             const iframeRect = iframe.getBoundingClientRect();
                             isFilled = iframeRect.height > 0;
                         }
-                    }
-                    
-                    // Or check data-ad-status
-                    if (!isFilled) {
-                        isFilled = adElement.getAttribute('data-ad-status') === 'filled';
                     }
                 } else if (isGPT) {
                     // GPT ad detection (original logic)

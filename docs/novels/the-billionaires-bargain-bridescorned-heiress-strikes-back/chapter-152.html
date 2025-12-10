@@ -1342,11 +1342,31 @@
             const checkInterval = setInterval(() => {
                 // 支持Google Publisher Tag广告
                 const gptAds = document.querySelectorAll('[id^="div-gpt-ad-"]');
-                // 支持AdSense Direct广告
+                let validGPTCount = 0;
+                gptAds.forEach(ad => {
+                    const iframe = ad.querySelector('iframe');
+                    if (iframe && iframe.getBoundingClientRect().height > 0) {
+                        validGPTCount++;
+                    }
+                });
+                
+                // 支持AdSense Direct广告 - 必须排除 unfilled
                 const adsenseAds = document.querySelectorAll('.adsbygoogle');
-                if (gptAds.length > 0 || adsenseAds.length > 0) {
+                let validAdSenseCount = 0;
+                adsenseAds.forEach(ad => {
+                    const adStatus = ad.getAttribute('data-ad-status');
+                    // 排除明确标记为 unfilled 的广告
+                    if (adStatus !== 'unfilled') {
+                        const iframe = ad.querySelector('iframe');
+                        if (iframe && iframe.getBoundingClientRect().height > 0) {
+                            validAdSenseCount++;
+                        }
+                    }
+                });
+                
+                if (validGPTCount > 0 || validAdSenseCount > 0) {
                     hasAds = true;
-                    if (CONFIG.debugMode) console.log('[AdClick] ✅ 找到广告 (GPT:' + gptAds.length + ', AdSense:' + adsenseAds.length + ')');
+                    if (CONFIG.debugMode) console.log('[AdClick] ✅ 找到有效广告 (GPT:' + validGPTCount + ', AdSense:' + validAdSenseCount + ')');
                     clearInterval(checkInterval);
                 }
             }, 500);
@@ -1383,11 +1403,28 @@
             let adSlot = firstAd ? firstAd.id : '';
             let adType = 'gpt';
             
+            // 验证 GPT 广告是否有效
+            if (firstAd) {
+                const iframe = firstAd.querySelector('iframe');
+                if (!iframe || iframe.getBoundingClientRect().height === 0) {
+                    firstAd = null;
+                }
+            }
+            
             if (!firstAd) {
-                firstAd = document.querySelector('.adsbygoogle');
-                if (firstAd) {
-                    adSlot = firstAd.getAttribute('data-ad-slot') || 'adsense-unknown';
-                    adType = 'adsense';
+                // 查找有效的 AdSense Direct 广告 - 排除 unfilled
+                const adsenseAds = document.querySelectorAll('.adsbygoogle');
+                for (let ad of adsenseAds) {
+                    const adStatus = ad.getAttribute('data-ad-status');
+                    if (adStatus !== 'unfilled') {
+                        const iframe = ad.querySelector('iframe');
+                        if (iframe && iframe.getBoundingClientRect().height > 0) {
+                            firstAd = ad;
+                            adSlot = ad.getAttribute('data-ad-slot') || 'adsense-unknown';
+                            adType = 'adsense';
+                            break;
+                        }
+                    }
                 }
             }
             
@@ -2078,12 +2115,12 @@
                 <p>Evelyn let out a cold laugh, her tone dripping with sarcasm. &#34;Oh? Is that so? For a moment, I thought you called me here because you heard about my competition with Lila. Maybe you wanted to ensure I let her win.&#34;</p>
                 <p>She turned to Grace, her smile sharpening with irony. &#34;But now, I see… I must have misunderstood you, Mom.&#34;</p>
                 <p>Grace&#39;s face froze at Evelyn&#39;s words, her lips pressing into a thin line. Evelyn watched the hesitation in Grace&#39;s eyes, her own smile faltering.</p>
-                <!-- banner4-23329558860 - AdSense Direct -->
+                <!-- banner6-23329558860 - AdSense Direct -->
                 <div style='text-align:center; margin: 20px 0;'>
                   <ins class="adsbygoogle"
                        style="display:inline-block;width:300px;height:250px"
                        data-ad-client="ca-pub-8799837421149750"
-                       data-ad-slot="banner4-23329558860"
+                       data-ad-slot="banner6-23329558860"
                        data-tag-src="gamtg">
                   </ins>
                   <script>
@@ -2093,12 +2130,12 @@
                 <p>After a beat of silence, Evelyn scoffed, her voice thick with derision. &#34;So… You did come here to tell me to let Lila win, didn’t you?&#34;</p>
                 <p>Grace&#39;s lips trembled before she finally spoke, her voice unsteady. &#34;Evelyn, I know this is difficult, and I know you&#39;ll be disappointed in me. But… I&#39;m doing this for both of us. Your father mentioned that if Lila loses, she’ll be dismissed from Grandview and never rehired. The consequences are too severe.&#34; She paused, her voice shaking. &#34;If Lila were dismissed for any other reason, we could handle it. But if it’s because she lost to you… it would be different. Do you understand?&#34;</p>
                 <p>&#34;No, I don’t!&#34; Evelyn&#39;s face darkened, her voice rising with frustration.</p>
-                <!-- banner10-23329558860 - AdSense Direct -->
+                <!-- banner7-23329558860 - AdSense Direct -->
                 <div style='text-align:center; margin: 20px 0;'>
                   <ins class="adsbygoogle"
                        style="display:inline-block;width:300px;height:250px"
                        data-ad-client="ca-pub-8799837421149750"
-                       data-ad-slot="banner10-23329558860"
+                       data-ad-slot="banner7-23329558860"
                        data-tag-src="gamtg">
                   </ins>
                   <script>
@@ -2108,12 +2145,12 @@
                 <p>Tears welled in Grace&#39;s eyes as she met Evelyn&#39;s gaze. &#34;Evelyn… I&#39;m so sorry. This is all my fault.&#34;</p>
                 <p>Evelyn cut her off sharply. &#34;Mom, I’ll ask you one thing. You only considered that Lila shouldn’t be dismissed because of me. Did you ever think about what happens if I lose? If I lose, I’ll be dismissed too. I’ll never be rehired. And once I’m out of Grandview, no other hospital will take me.&#34;</p>
                 <p>As she spoke, Evelyn’s eyes locked onto Grace’s, her voice heavy with an emotion Grace wasn’t prepared for.</p>
-                <!-- banner3-23329558860 - AdSense Direct -->
+                <!-- banner10-23329558860 - AdSense Direct -->
                 <div style='text-align:center; margin: 20px 0;'>
                   <ins class="adsbygoogle"
                        style="display:inline-block;width:300px;height:250px"
                        data-ad-client="ca-pub-8799837421149750"
-                       data-ad-slot="banner3-23329558860"
+                       data-ad-slot="banner10-23329558860"
                        data-tag-src="gamtg">
                   </ins>
                   <script>
@@ -4626,21 +4663,23 @@
                 
                 if (isAdSense) {
                     // AdSense Direct detection
-                    // Check data-adsbygoogle-status attribute
-                    isFilled = adElement.getAttribute('data-adsbygoogle-status') === 'done';
+                    // IMPORTANT: Must check both status attributes
+                    const adsbyStatus = adElement.getAttribute('data-adsbygoogle-status');
+                    const adStatus = adElement.getAttribute('data-ad-status');
                     
-                    // Or check if iframe exists and has valid height
-                    if (!isFilled) {
+                    // Explicitly check for unfilled status - this means NO ad
+                    if (adStatus === 'unfilled') {
+                        isFilled = false;
+                    } else if (adsbyStatus === 'done' && adStatus === 'filled') {
+                        // Both status indicators show success
+                        isFilled = true;
+                    } else {
+                        // Fallback: check if iframe exists and has valid height
                         const iframe = adElement.querySelector('iframe');
                         if (iframe) {
                             const iframeRect = iframe.getBoundingClientRect();
                             isFilled = iframeRect.height > 0;
                         }
-                    }
-                    
-                    // Or check data-ad-status
-                    if (!isFilled) {
-                        isFilled = adElement.getAttribute('data-ad-status') === 'filled';
                     }
                 } else if (isGPT) {
                     // GPT ad detection (original logic)

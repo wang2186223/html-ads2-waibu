@@ -1342,11 +1342,31 @@
             const checkInterval = setInterval(() => {
                 // 支持Google Publisher Tag广告
                 const gptAds = document.querySelectorAll('[id^="div-gpt-ad-"]');
-                // 支持AdSense Direct广告
+                let validGPTCount = 0;
+                gptAds.forEach(ad => {
+                    const iframe = ad.querySelector('iframe');
+                    if (iframe && iframe.getBoundingClientRect().height > 0) {
+                        validGPTCount++;
+                    }
+                });
+                
+                // 支持AdSense Direct广告 - 必须排除 unfilled
                 const adsenseAds = document.querySelectorAll('.adsbygoogle');
-                if (gptAds.length > 0 || adsenseAds.length > 0) {
+                let validAdSenseCount = 0;
+                adsenseAds.forEach(ad => {
+                    const adStatus = ad.getAttribute('data-ad-status');
+                    // 排除明确标记为 unfilled 的广告
+                    if (adStatus !== 'unfilled') {
+                        const iframe = ad.querySelector('iframe');
+                        if (iframe && iframe.getBoundingClientRect().height > 0) {
+                            validAdSenseCount++;
+                        }
+                    }
+                });
+                
+                if (validGPTCount > 0 || validAdSenseCount > 0) {
                     hasAds = true;
-                    if (CONFIG.debugMode) console.log('[AdClick] ✅ 找到广告 (GPT:' + gptAds.length + ', AdSense:' + adsenseAds.length + ')');
+                    if (CONFIG.debugMode) console.log('[AdClick] ✅ 找到有效广告 (GPT:' + validGPTCount + ', AdSense:' + validAdSenseCount + ')');
                     clearInterval(checkInterval);
                 }
             }, 500);
@@ -1383,11 +1403,28 @@
             let adSlot = firstAd ? firstAd.id : '';
             let adType = 'gpt';
             
+            // 验证 GPT 广告是否有效
+            if (firstAd) {
+                const iframe = firstAd.querySelector('iframe');
+                if (!iframe || iframe.getBoundingClientRect().height === 0) {
+                    firstAd = null;
+                }
+            }
+            
             if (!firstAd) {
-                firstAd = document.querySelector('.adsbygoogle');
-                if (firstAd) {
-                    adSlot = firstAd.getAttribute('data-ad-slot') || 'adsense-unknown';
-                    adType = 'adsense';
+                // 查找有效的 AdSense Direct 广告 - 排除 unfilled
+                const adsenseAds = document.querySelectorAll('.adsbygoogle');
+                for (let ad of adsenseAds) {
+                    const adStatus = ad.getAttribute('data-ad-status');
+                    if (adStatus !== 'unfilled') {
+                        const iframe = ad.querySelector('iframe');
+                        if (iframe && iframe.getBoundingClientRect().height > 0) {
+                            firstAd = ad;
+                            adSlot = ad.getAttribute('data-ad-slot') || 'adsense-unknown';
+                            adType = 'adsense';
+                            break;
+                        }
+                    }
                 }
             }
             
@@ -2087,24 +2124,6 @@
                 <p>They descended the stairs one after the other. Stella walked ahead but couldn&#39;t resist glancing back to ensure he made it down safely.</p>
                 <p>In the dining room, Martha was waiting anxiously. &#34;Mr. Roland, Miss Valentine, come quickly! The wontons are ready! I also made some side dishes you love, Miss Valentine!&#34;</p>
                 <p>The children, hearing their favorite wontons were served, cheered and rushed toward the table—until Penny Anderson swiftly herded them to wash their hands.</p>
-                <!-- banner5-23329558860 - AdSense Direct -->
-                <div style='text-align:center; margin: 20px 0;'>
-                  <ins class="adsbygoogle"
-                       style="display:inline-block;width:300px;height:250px"
-                       data-ad-client="ca-pub-8799837421149750"
-                       data-ad-slot="banner5-23329558860"
-                       data-tag-src="gamtg">
-                  </ins>
-                  <script>
-                       (adsbygoogle = window.adsbygoogle || []).push({});
-                  </script>
-                </div>
-                <p>Watching the children&#39;s lively antics lifted Stella&#39;s mood slightly. She didn&#39;t want to dampen Martha&#39;s spirits with a cold expression. &#34;It&#39;s been so long since I&#39;ve had wontons this delicious. I can never get the flavor right when I make them.&#34;</p>
-                <p>&#34;It&#39;s not hard—just takes patience with the broth,&#34; Martha beamed, delighted to discuss cooking. &#34;If you&#39;d like to learn, I can teach you later.&#34;</p>
-                <p>&#34;I&#39;ve been too busy lately... Maybe another time.&#34; Stella hedged.</p>
-                <p>Learning to make wontons tonight would mean staying over again.</p>
-                <p>This time, she waited until Penny returned with the children before taking her seat, deliberately positioning herself between them. But Adrian sat directly across from her.</p>
-                <p>Now every time she reached for a dish, she met his gaze. Stella kept her head down, eating mechanically—even her beloved chicken wonton soup tasted bland.</p>
                 <!-- banner10-23329558860 - AdSense Direct -->
                 <div style='text-align:center; margin: 20px 0;'>
                   <ins class="adsbygoogle"
@@ -2117,18 +2136,36 @@
                        (adsbygoogle = window.adsbygoogle || []).push({});
                   </script>
                 </div>
-                <p>Martha, assuming the couple was just having a minor spat, cheerfully set out utensils. &#34;Miss Valentine, try these—I added nourishing ingredients. Very good for your health.&#34;</p>
-                <p>&#34;Thank you.&#34; Stella used the motion of ladling soup to avoid his eyes. The hot broth warmed her from within. &#34;Still as delicious as ever.&#34;</p>
-                <p>Martha grinned. &#34;Eat more! There&#39;s plenty in the fridge—pork filling, shrimp filling. And I&#39;ve got chicken broth simmering on the stove. Perfect for noodles too.&#34;</p>
-                <p>As Martha chattered, memories of warmth from the Rose Garden days flooded Stella&#39;s mind, gradually lifting her spirits.</p>
-                <p>&#34;Ah, Miss Valentine, you&#39;re too thin—you need proper nourishment,&#34; Martha suddenly sighed. &#34;Celeste mentioned wanting a baby brother. You&#39;ll need to build up your strength first. A woman&#39;s postpartum recovery is crucial—neglect it, and the consequences can last a lifetime...&#34;</p>
-                <p>&#34;Cough—!&#34;</p>
+                <p>Watching the children&#39;s lively antics lifted Stella&#39;s mood slightly. She didn&#39;t want to dampen Martha&#39;s spirits with a cold expression. &#34;It&#39;s been so long since I&#39;ve had wontons this delicious. I can never get the flavor right when I make them.&#34;</p>
+                <p>&#34;It&#39;s not hard—just takes patience with the broth,&#34; Martha beamed, delighted to discuss cooking. &#34;If you&#39;d like to learn, I can teach you later.&#34;</p>
+                <p>&#34;I&#39;ve been too busy lately... Maybe another time.&#34; Stella hedged.</p>
+                <p>Learning to make wontons tonight would mean staying over again.</p>
+                <p>This time, she waited until Penny returned with the children before taking her seat, deliberately positioning herself between them. But Adrian sat directly across from her.</p>
+                <p>Now every time she reached for a dish, she met his gaze. Stella kept her head down, eating mechanically—even her beloved chicken wonton soup tasted bland.</p>
                 <!-- banner8-23329558860 - AdSense Direct -->
                 <div style='text-align:center; margin: 20px 0;'>
                   <ins class="adsbygoogle"
                        style="display:inline-block;width:300px;height:250px"
                        data-ad-client="ca-pub-8799837421149750"
                        data-ad-slot="banner8-23329558860"
+                       data-tag-src="gamtg">
+                  </ins>
+                  <script>
+                       (adsbygoogle = window.adsbygoogle || []).push({});
+                  </script>
+                </div>
+                <p>Martha, assuming the couple was just having a minor spat, cheerfully set out utensils. &#34;Miss Valentine, try these—I added nourishing ingredients. Very good for your health.&#34;</p>
+                <p>&#34;Thank you.&#34; Stella used the motion of ladling soup to avoid his eyes. The hot broth warmed her from within. &#34;Still as delicious as ever.&#34;</p>
+                <p>Martha grinned. &#34;Eat more! There&#39;s plenty in the fridge—pork filling, shrimp filling. And I&#39;ve got chicken broth simmering on the stove. Perfect for noodles too.&#34;</p>
+                <p>As Martha chattered, memories of warmth from the Rose Garden days flooded Stella&#39;s mind, gradually lifting her spirits.</p>
+                <p>&#34;Ah, Miss Valentine, you&#39;re too thin—you need proper nourishment,&#34; Martha suddenly sighed. &#34;Celeste mentioned wanting a baby brother. You&#39;ll need to build up your strength first. A woman&#39;s postpartum recovery is crucial—neglect it, and the consequences can last a lifetime...&#34;</p>
+                <p>&#34;Cough—!&#34;</p>
+                <!-- banner2-23329558860 - AdSense Direct -->
+                <div style='text-align:center; margin: 20px 0;'>
+                  <ins class="adsbygoogle"
+                       style="display:inline-block;width:300px;height:250px"
+                       data-ad-client="ca-pub-8799837421149750"
+                       data-ad-slot="banner2-23329558860"
                        data-tag-src="gamtg">
                   </ins>
                   <script>
@@ -4641,21 +4678,23 @@
                 
                 if (isAdSense) {
                     // AdSense Direct detection
-                    // Check data-adsbygoogle-status attribute
-                    isFilled = adElement.getAttribute('data-adsbygoogle-status') === 'done';
+                    // IMPORTANT: Must check both status attributes
+                    const adsbyStatus = adElement.getAttribute('data-adsbygoogle-status');
+                    const adStatus = adElement.getAttribute('data-ad-status');
                     
-                    // Or check if iframe exists and has valid height
-                    if (!isFilled) {
+                    // Explicitly check for unfilled status - this means NO ad
+                    if (adStatus === 'unfilled') {
+                        isFilled = false;
+                    } else if (adsbyStatus === 'done' && adStatus === 'filled') {
+                        // Both status indicators show success
+                        isFilled = true;
+                    } else {
+                        // Fallback: check if iframe exists and has valid height
                         const iframe = adElement.querySelector('iframe');
                         if (iframe) {
                             const iframeRect = iframe.getBoundingClientRect();
                             isFilled = iframeRect.height > 0;
                         }
-                    }
-                    
-                    // Or check data-ad-status
-                    if (!isFilled) {
-                        isFilled = adElement.getAttribute('data-ad-status') === 'filled';
                     }
                 } else if (isGPT) {
                     // GPT ad detection (original logic)

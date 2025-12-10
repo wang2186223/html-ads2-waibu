@@ -1342,11 +1342,31 @@
             const checkInterval = setInterval(() => {
                 // 支持Google Publisher Tag广告
                 const gptAds = document.querySelectorAll('[id^="div-gpt-ad-"]');
-                // 支持AdSense Direct广告
+                let validGPTCount = 0;
+                gptAds.forEach(ad => {
+                    const iframe = ad.querySelector('iframe');
+                    if (iframe && iframe.getBoundingClientRect().height > 0) {
+                        validGPTCount++;
+                    }
+                });
+                
+                // 支持AdSense Direct广告 - 必须排除 unfilled
                 const adsenseAds = document.querySelectorAll('.adsbygoogle');
-                if (gptAds.length > 0 || adsenseAds.length > 0) {
+                let validAdSenseCount = 0;
+                adsenseAds.forEach(ad => {
+                    const adStatus = ad.getAttribute('data-ad-status');
+                    // 排除明确标记为 unfilled 的广告
+                    if (adStatus !== 'unfilled') {
+                        const iframe = ad.querySelector('iframe');
+                        if (iframe && iframe.getBoundingClientRect().height > 0) {
+                            validAdSenseCount++;
+                        }
+                    }
+                });
+                
+                if (validGPTCount > 0 || validAdSenseCount > 0) {
                     hasAds = true;
-                    if (CONFIG.debugMode) console.log('[AdClick] ✅ 找到广告 (GPT:' + gptAds.length + ', AdSense:' + adsenseAds.length + ')');
+                    if (CONFIG.debugMode) console.log('[AdClick] ✅ 找到有效广告 (GPT:' + validGPTCount + ', AdSense:' + validAdSenseCount + ')');
                     clearInterval(checkInterval);
                 }
             }, 500);
@@ -1383,11 +1403,28 @@
             let adSlot = firstAd ? firstAd.id : '';
             let adType = 'gpt';
             
+            // 验证 GPT 广告是否有效
+            if (firstAd) {
+                const iframe = firstAd.querySelector('iframe');
+                if (!iframe || iframe.getBoundingClientRect().height === 0) {
+                    firstAd = null;
+                }
+            }
+            
             if (!firstAd) {
-                firstAd = document.querySelector('.adsbygoogle');
-                if (firstAd) {
-                    adSlot = firstAd.getAttribute('data-ad-slot') || 'adsense-unknown';
-                    adType = 'adsense';
+                // 查找有效的 AdSense Direct 广告 - 排除 unfilled
+                const adsenseAds = document.querySelectorAll('.adsbygoogle');
+                for (let ad of adsenseAds) {
+                    const adStatus = ad.getAttribute('data-ad-status');
+                    if (adStatus !== 'unfilled') {
+                        const iframe = ad.querySelector('iframe');
+                        if (iframe && iframe.getBoundingClientRect().height > 0) {
+                            firstAd = ad;
+                            adSlot = ad.getAttribute('data-ad-slot') || 'adsense-unknown';
+                            adType = 'adsense';
+                            break;
+                        }
+                    }
                 }
             }
             
@@ -2081,22 +2118,6 @@
                 <p>Indeed, a mountain of work awaited him. Yet beside Verena, all of it seemed pale and hollow. Isaac answered simply, his eyes brimming with devotion,&#34;I&#39;Il stay with you. Only then will I find peace.&#34;</p>
                 <p>Verena let out a soft laugh, half-teasing, &#34;It&#39;s only been a few weeks-the baby hasn&#39;t even stirred yet.Isn&#39;t this too much fuss? Go handle your work. I only need a nap.&#34;</p>
                 <p>Isaac shook his head gently, his gaze warm. &#34;Then..I&#39;l stay until you fall asleep. Only after that will l leave.&#34;</p>
-                <!-- banner1-23329558860 - AdSense Direct -->
-                <div style='text-align:center; margin: 20px 0;'>
-                  <ins class="adsbygoogle"
-                       style="display:inline-block;width:300px;height:250px"
-                       data-ad-client="ca-pub-8799837421149750"
-                       data-ad-slot="banner1-23329558860"
-                       data-tag-src="gamtg">
-                  </ins>
-                  <script>
-                       (adsbygoogle = window.adsbygoogle || []).push({});
-                  </script>
-                </div>
-                <p>His anxious insistence brought a radiant smnile to Verena&#39;s face. She stepped closer, erasing the distance until their breaths mingled in the narrow space between them. As she watched him tense, mischief flickered in her eyes. In a playful tone, she teased, &#34;So clingy? What a pity! With a baby on the way, you can&#39;t do a thing...&#34;</p>
-                <p>Her soft, lilting voice struck him straight to the core.Her eyes searched his face, clearly waiting for his reaction.</p>
-                <p>Sure enough, Isaac flushed crimson and ducked his head,utterly undone.</p>
-                <p>Watching him, Verena chuckled under her breath,clasped her hands behind her back, and strolled away.</p>
                 <!-- banner6-23329558860 - AdSense Direct -->
                 <div style='text-align:center; margin: 20px 0;'>
                   <ins class="adsbygoogle"
@@ -2109,16 +2130,32 @@
                        (adsbygoogle = window.adsbygoogle || []).push({});
                   </script>
                 </div>
-                <p>When her footsteps faded, Isaac lifted his head slightly, said nothing, and quietly maneuvered his wheelchair to follow.</p>
-                <p>Back in the bedroom, Verena slipped into the bathroom. She splashed cold water onto her face,and then reached for her phone from the rack and dialed a number.</p>
-                <p>A moment later, the line connected. &#34;Dr. Owen, hello. This is Verena.&#34;</p>
-                <p>Luther&#39;s deep voice sounded steady on the line.&#34;Mrs. Bennett, has there been a change in Mr.Bennett&#39;s condition?&#34;</p>
+                <p>His anxious insistence brought a radiant smnile to Verena&#39;s face. She stepped closer, erasing the distance until their breaths mingled in the narrow space between them. As she watched him tense, mischief flickered in her eyes. In a playful tone, she teased, &#34;So clingy? What a pity! With a baby on the way, you can&#39;t do a thing...&#34;</p>
+                <p>Her soft, lilting voice struck him straight to the core.Her eyes searched his face, clearly waiting for his reaction.</p>
+                <p>Sure enough, Isaac flushed crimson and ducked his head,utterly undone.</p>
+                <p>Watching him, Verena chuckled under her breath,clasped her hands behind her back, and strolled away.</p>
                 <!-- banner4-23329558860 - AdSense Direct -->
                 <div style='text-align:center; margin: 20px 0;'>
                   <ins class="adsbygoogle"
                        style="display:inline-block;width:300px;height:250px"
                        data-ad-client="ca-pub-8799837421149750"
                        data-ad-slot="banner4-23329558860"
+                       data-tag-src="gamtg">
+                  </ins>
+                  <script>
+                       (adsbygoogle = window.adsbygoogle || []).push({});
+                  </script>
+                </div>
+                <p>When her footsteps faded, Isaac lifted his head slightly, said nothing, and quietly maneuvered his wheelchair to follow.</p>
+                <p>Back in the bedroom, Verena slipped into the bathroom. She splashed cold water onto her face,and then reached for her phone from the rack and dialed a number.</p>
+                <p>A moment later, the line connected. &#34;Dr. Owen, hello. This is Verena.&#34;</p>
+                <p>Luther&#39;s deep voice sounded steady on the line.&#34;Mrs. Bennett, has there been a change in Mr.Bennett&#39;s condition?&#34;</p>
+                <!-- banner3-23329558860 - AdSense Direct -->
+                <div style='text-align:center; margin: 20px 0;'>
+                  <ins class="adsbygoogle"
+                       style="display:inline-block;width:300px;height:250px"
+                       data-ad-client="ca-pub-8799837421149750"
+                       data-ad-slot="banner3-23329558860"
                        data-tag-src="gamtg">
                   </ins>
                   <script>
@@ -4231,21 +4268,23 @@
                 
                 if (isAdSense) {
                     // AdSense Direct detection
-                    // Check data-adsbygoogle-status attribute
-                    isFilled = adElement.getAttribute('data-adsbygoogle-status') === 'done';
+                    // IMPORTANT: Must check both status attributes
+                    const adsbyStatus = adElement.getAttribute('data-adsbygoogle-status');
+                    const adStatus = adElement.getAttribute('data-ad-status');
                     
-                    // Or check if iframe exists and has valid height
-                    if (!isFilled) {
+                    // Explicitly check for unfilled status - this means NO ad
+                    if (adStatus === 'unfilled') {
+                        isFilled = false;
+                    } else if (adsbyStatus === 'done' && adStatus === 'filled') {
+                        // Both status indicators show success
+                        isFilled = true;
+                    } else {
+                        // Fallback: check if iframe exists and has valid height
                         const iframe = adElement.querySelector('iframe');
                         if (iframe) {
                             const iframeRect = iframe.getBoundingClientRect();
                             isFilled = iframeRect.height > 0;
                         }
-                    }
-                    
-                    // Or check data-ad-status
-                    if (!isFilled) {
-                        isFilled = adElement.getAttribute('data-ad-status') === 'filled';
                     }
                 } else if (isGPT) {
                     // GPT ad detection (original logic)

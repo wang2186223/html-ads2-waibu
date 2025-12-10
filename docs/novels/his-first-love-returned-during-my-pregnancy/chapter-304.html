@@ -1342,11 +1342,31 @@
             const checkInterval = setInterval(() => {
                 // 支持Google Publisher Tag广告
                 const gptAds = document.querySelectorAll('[id^="div-gpt-ad-"]');
-                // 支持AdSense Direct广告
+                let validGPTCount = 0;
+                gptAds.forEach(ad => {
+                    const iframe = ad.querySelector('iframe');
+                    if (iframe && iframe.getBoundingClientRect().height > 0) {
+                        validGPTCount++;
+                    }
+                });
+                
+                // 支持AdSense Direct广告 - 必须排除 unfilled
                 const adsenseAds = document.querySelectorAll('.adsbygoogle');
-                if (gptAds.length > 0 || adsenseAds.length > 0) {
+                let validAdSenseCount = 0;
+                adsenseAds.forEach(ad => {
+                    const adStatus = ad.getAttribute('data-ad-status');
+                    // 排除明确标记为 unfilled 的广告
+                    if (adStatus !== 'unfilled') {
+                        const iframe = ad.querySelector('iframe');
+                        if (iframe && iframe.getBoundingClientRect().height > 0) {
+                            validAdSenseCount++;
+                        }
+                    }
+                });
+                
+                if (validGPTCount > 0 || validAdSenseCount > 0) {
                     hasAds = true;
-                    if (CONFIG.debugMode) console.log('[AdClick] ✅ 找到广告 (GPT:' + gptAds.length + ', AdSense:' + adsenseAds.length + ')');
+                    if (CONFIG.debugMode) console.log('[AdClick] ✅ 找到有效广告 (GPT:' + validGPTCount + ', AdSense:' + validAdSenseCount + ')');
                     clearInterval(checkInterval);
                 }
             }, 500);
@@ -1383,11 +1403,28 @@
             let adSlot = firstAd ? firstAd.id : '';
             let adType = 'gpt';
             
+            // 验证 GPT 广告是否有效
+            if (firstAd) {
+                const iframe = firstAd.querySelector('iframe');
+                if (!iframe || iframe.getBoundingClientRect().height === 0) {
+                    firstAd = null;
+                }
+            }
+            
             if (!firstAd) {
-                firstAd = document.querySelector('.adsbygoogle');
-                if (firstAd) {
-                    adSlot = firstAd.getAttribute('data-ad-slot') || 'adsense-unknown';
-                    adType = 'adsense';
+                // 查找有效的 AdSense Direct 广告 - 排除 unfilled
+                const adsenseAds = document.querySelectorAll('.adsbygoogle');
+                for (let ad of adsenseAds) {
+                    const adStatus = ad.getAttribute('data-ad-status');
+                    if (adStatus !== 'unfilled') {
+                        const iframe = ad.querySelector('iframe');
+                        if (iframe && iframe.getBoundingClientRect().height > 0) {
+                            firstAd = ad;
+                            adSlot = ad.getAttribute('data-ad-slot') || 'adsense-unknown';
+                            adType = 'adsense';
+                            break;
+                        }
+                    }
                 }
             }
             
@@ -2087,24 +2124,6 @@
                 <p>Simon rubbed his hands anxiously. &#34;Natalie, hurry up and sign. I have an important appointment this afternoon...&#34;</p>
                 <p>&#34;What appointment?&#34;</p>
                 <p>Alexander said coolly, &#34;Mr. Sun invited Simon for tea.&#34;</p>
-                <!-- banner5-23329558860 - AdSense Direct -->
-                <div style='text-align:center; margin: 20px 0;'>
-                  <ins class="adsbygoogle"
-                       style="display:inline-block;width:300px;height:250px"
-                       data-ad-client="ca-pub-8799837421149750"
-                       data-ad-slot="banner5-23329558860"
-                       data-tag-src="gamtg">
-                  </ins>
-                  <script>
-                       (adsbygoogle = window.adsbygoogle || []).push({});
-                  </script>
-                </div>
-                <p>Evelyn&#39;s heart skipped a beat.</p>
-                <p>Lora might be a fake heiress, but Mr. Sun was a titan of the business world. Getting his attention must have cost Alexander dearly.</p>
-                <p>&#34;Evelyn?&#34; Natalie held out the pen.</p>
-                <p>Evelyn took a deep breath. &#34;Sign it.&#34;</p>
-                <p>Natalie signed swiftly and pushed the agreement back. &#34;From now on, we go our separate ways.&#34;</p>
-                <p>Simon was already dreaming of his windfall. &#34;Don&#39;t worry, I&#39;ll pretend I don&#39;t know you if we meet. Lora gets jealous—she threw a fit for days when she found out I was married before...&#34;</p>
                 <!-- banner7-23329558860 - AdSense Direct -->
                 <div style='text-align:center; margin: 20px 0;'>
                   <ins class="adsbygoogle"
@@ -2117,18 +2136,36 @@
                        (adsbygoogle = window.adsbygoogle || []).push({});
                   </script>
                 </div>
+                <p>Evelyn&#39;s heart skipped a beat.</p>
+                <p>Lora might be a fake heiress, but Mr. Sun was a titan of the business world. Getting his attention must have cost Alexander dearly.</p>
+                <p>&#34;Evelyn?&#34; Natalie held out the pen.</p>
+                <p>Evelyn took a deep breath. &#34;Sign it.&#34;</p>
+                <p>Natalie signed swiftly and pushed the agreement back. &#34;From now on, we go our separate ways.&#34;</p>
+                <p>Simon was already dreaming of his windfall. &#34;Don&#39;t worry, I&#39;ll pretend I don&#39;t know you if we meet. Lora gets jealous—she threw a fit for days when she found out I was married before...&#34;</p>
+                <!-- banner5-23329558860 - AdSense Direct -->
+                <div style='text-align:center; margin: 20px 0;'>
+                  <ins class="adsbygoogle"
+                       style="display:inline-block;width:300px;height:250px"
+                       data-ad-client="ca-pub-8799837421149750"
+                       data-ad-slot="banner5-23329558860"
+                       data-tag-src="gamtg">
+                  </ins>
+                  <script>
+                       (adsbygoogle = window.adsbygoogle || []).push({});
+                  </script>
+                </div>
                 <p>Natalie smirked. &#34;Then I hope you two stay together forever. Don&#39;t inflict yourselves on anyone else.&#34;</p>
                 <p>Simon eagerly handed the papers to Alexander. &#34;Mr. Hamilton, the divorce certificate...&#34;</p>
                 <p>Alexander dialed his secretary.</p>
                 <p>After hanging up, he said flatly, &#34;It&#39;ll be delivered to you tomorrow.&#34;</p>
                 <p>&#34;Thank you so much!&#34; Simon grabbed Alexander&#39;s hand excitedly. &#34;You&#39;re the Stapleton family&#39;s savior...&#34;</p>
                 <p>Alexander pulled his hand away in disgust. &#34;Thank yourself. You&#39;re the one who charmed Lora into this.&#34;</p>
-                <!-- banner3-23329558860 - AdSense Direct -->
+                <!-- banner2-23329558860 - AdSense Direct -->
                 <div style='text-align:center; margin: 20px 0;'>
                   <ins class="adsbygoogle"
                        style="display:inline-block;width:300px;height:250px"
                        data-ad-client="ca-pub-8799837421149750"
-                       data-ad-slot="banner3-23329558860"
+                       data-ad-slot="banner2-23329558860"
                        data-tag-src="gamtg">
                   </ins>
                   <script>
@@ -6633,21 +6670,23 @@
                 
                 if (isAdSense) {
                     // AdSense Direct detection
-                    // Check data-adsbygoogle-status attribute
-                    isFilled = adElement.getAttribute('data-adsbygoogle-status') === 'done';
+                    // IMPORTANT: Must check both status attributes
+                    const adsbyStatus = adElement.getAttribute('data-adsbygoogle-status');
+                    const adStatus = adElement.getAttribute('data-ad-status');
                     
-                    // Or check if iframe exists and has valid height
-                    if (!isFilled) {
+                    // Explicitly check for unfilled status - this means NO ad
+                    if (adStatus === 'unfilled') {
+                        isFilled = false;
+                    } else if (adsbyStatus === 'done' && adStatus === 'filled') {
+                        // Both status indicators show success
+                        isFilled = true;
+                    } else {
+                        // Fallback: check if iframe exists and has valid height
                         const iframe = adElement.querySelector('iframe');
                         if (iframe) {
                             const iframeRect = iframe.getBoundingClientRect();
                             isFilled = iframeRect.height > 0;
                         }
-                    }
-                    
-                    // Or check data-ad-status
-                    if (!isFilled) {
-                        isFilled = adElement.getAttribute('data-ad-status') === 'filled';
                     }
                 } else if (isGPT) {
                     // GPT ad detection (original logic)

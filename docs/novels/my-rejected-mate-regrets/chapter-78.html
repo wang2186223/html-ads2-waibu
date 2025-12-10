@@ -1342,11 +1342,31 @@
             const checkInterval = setInterval(() => {
                 // 支持Google Publisher Tag广告
                 const gptAds = document.querySelectorAll('[id^="div-gpt-ad-"]');
-                // 支持AdSense Direct广告
+                let validGPTCount = 0;
+                gptAds.forEach(ad => {
+                    const iframe = ad.querySelector('iframe');
+                    if (iframe && iframe.getBoundingClientRect().height > 0) {
+                        validGPTCount++;
+                    }
+                });
+                
+                // 支持AdSense Direct广告 - 必须排除 unfilled
                 const adsenseAds = document.querySelectorAll('.adsbygoogle');
-                if (gptAds.length > 0 || adsenseAds.length > 0) {
+                let validAdSenseCount = 0;
+                adsenseAds.forEach(ad => {
+                    const adStatus = ad.getAttribute('data-ad-status');
+                    // 排除明确标记为 unfilled 的广告
+                    if (adStatus !== 'unfilled') {
+                        const iframe = ad.querySelector('iframe');
+                        if (iframe && iframe.getBoundingClientRect().height > 0) {
+                            validAdSenseCount++;
+                        }
+                    }
+                });
+                
+                if (validGPTCount > 0 || validAdSenseCount > 0) {
                     hasAds = true;
-                    if (CONFIG.debugMode) console.log('[AdClick] ✅ 找到广告 (GPT:' + gptAds.length + ', AdSense:' + adsenseAds.length + ')');
+                    if (CONFIG.debugMode) console.log('[AdClick] ✅ 找到有效广告 (GPT:' + validGPTCount + ', AdSense:' + validAdSenseCount + ')');
                     clearInterval(checkInterval);
                 }
             }, 500);
@@ -1383,11 +1403,28 @@
             let adSlot = firstAd ? firstAd.id : '';
             let adType = 'gpt';
             
+            // 验证 GPT 广告是否有效
+            if (firstAd) {
+                const iframe = firstAd.querySelector('iframe');
+                if (!iframe || iframe.getBoundingClientRect().height === 0) {
+                    firstAd = null;
+                }
+            }
+            
             if (!firstAd) {
-                firstAd = document.querySelector('.adsbygoogle');
-                if (firstAd) {
-                    adSlot = firstAd.getAttribute('data-ad-slot') || 'adsense-unknown';
-                    adType = 'adsense';
+                // 查找有效的 AdSense Direct 广告 - 排除 unfilled
+                const adsenseAds = document.querySelectorAll('.adsbygoogle');
+                for (let ad of adsenseAds) {
+                    const adStatus = ad.getAttribute('data-ad-status');
+                    if (adStatus !== 'unfilled') {
+                        const iframe = ad.querySelector('iframe');
+                        if (iframe && iframe.getBoundingClientRect().height > 0) {
+                            firstAd = ad;
+                            adSlot = ad.getAttribute('data-ad-slot') || 'adsense-unknown';
+                            adType = 'adsense';
+                            break;
+                        }
+                    }
                 }
             }
             
@@ -2084,6 +2121,23 @@
                 <p>Nathaniel clears his throat. &#34;Well... your dad might have gone full Guardian on them.&#34;</p>
                 <p>Genevieve nods. &#34;Yeah. There was some kind of... standoff in your room. Your dad kicked them out and banned them from returning.&#34;</p>
                 <p>Nathaniel adds, voice tinged with awe, &#34;He said if they wanted to see you, they&#39;d have to go through him first.&#34;</p>
+                <!-- banner6-23329558860 - AdSense Direct -->
+                <div style='text-align:center; margin: 20px 0;'>
+                  <ins class="adsbygoogle"
+                       style="display:inline-block;width:300px;height:250px"
+                       data-ad-client="ca-pub-8799837421149750"
+                       data-ad-slot="banner6-23329558860"
+                       data-tag-src="gamtg">
+                  </ins>
+                  <script>
+                       (adsbygoogle = window.adsbygoogle || []).push({});
+                  </script>
+                </div>
+                <p>I&#39;m speechless. First, whatever tension exists between Adrian and Sebastian seems as volatile as the day Sebastian brought that bear to school. Second, my dad just asserted dominance over two Alphas.</p>
+                <p>&#34;Alpha Alistair didn&#39;t intervene?&#34;</p>
+                <p>&#34;Nope,&#34; Genevieve says. &#34;He just grinned and said it was good to see his old Guardian back in action. Did you know your dad&#39;s been training warriors?&#34;</p>
+                <p>&#34;What? What else did I miss?&#34;</p>
+                <p>Genevieve groans. &#34;You mean besides the fact that your father is trying to kill us with his insane training regimen? I&#39;ve never been this sore in my life.&#34;</p>
                 <!-- banner10-23329558860 - AdSense Direct -->
                 <div style='text-align:center; margin: 20px 0;'>
                   <ins class="adsbygoogle"
@@ -2096,35 +2150,18 @@
                        (adsbygoogle = window.adsbygoogle || []).push({});
                   </script>
                 </div>
-                <p>I&#39;m speechless. First, whatever tension exists between Adrian and Sebastian seems as volatile as the day Sebastian brought that bear to school. Second, my dad just asserted dominance over two Alphas.</p>
-                <p>&#34;Alpha Alistair didn&#39;t intervene?&#34;</p>
-                <p>&#34;Nope,&#34; Genevieve says. &#34;He just grinned and said it was good to see his old Guardian back in action. Did you know your dad&#39;s been training warriors?&#34;</p>
-                <p>&#34;What? What else did I miss?&#34;</p>
-                <p>Genevieve groans. &#34;You mean besides the fact that your father is trying to kill us with his insane training regimen? I&#39;ve never been this sore in my life.&#34;</p>
-                <!-- banner1-23329558860 - AdSense Direct -->
-                <div style='text-align:center; margin: 20px 0;'>
-                  <ins class="adsbygoogle"
-                       style="display:inline-block;width:300px;height:250px"
-                       data-ad-client="ca-pub-8799837421149750"
-                       data-ad-slot="banner1-23329558860"
-                       data-tag-src="gamtg">
-                  </ins>
-                  <script>
-                       (adsbygoogle = window.adsbygoogle || []).push({});
-                  </script>
-                </div>
                 <p>I&#39;m laughing when Dad returns with Dr. Whitmore.</p>
                 <p>&#34;That&#39;s a good sign,&#34; the doctor remarks, smiling.</p>
                 <p>&#34;Hey, Doc,&#34; I say. &#34;So? When can I get out of here?&#34;</p>
                 <p>He checks my vitals, flipping through the nurse&#39;s notes before meeting my gaze. &#34;You and Selene are something else. Your recovery rate is astounding. At this pace, I’d say you can leave tonight.&#34;</p>
                 <p>Relief crashes over me. I don’t want another second in this sterile bed. I need fresh air, my own room, my own space to heal properly.</p>
                 <p>&#34;What do I need to do?&#34; I ask, already sitting up straighter.</p>
-                <!-- banner9-23329558860 - AdSense Direct -->
+                <!-- banner1-23329558860 - AdSense Direct -->
                 <div style='text-align:center; margin: 20px 0;'>
                   <ins class="adsbygoogle"
                        style="display:inline-block;width:300px;height:250px"
                        data-ad-client="ca-pub-8799837421149750"
-                       data-ad-slot="banner9-23329558860"
+                       data-ad-slot="banner1-23329558860"
                        data-tag-src="gamtg">
                   </ins>
                   <script>
@@ -4629,21 +4666,23 @@
                 
                 if (isAdSense) {
                     // AdSense Direct detection
-                    // Check data-adsbygoogle-status attribute
-                    isFilled = adElement.getAttribute('data-adsbygoogle-status') === 'done';
+                    // IMPORTANT: Must check both status attributes
+                    const adsbyStatus = adElement.getAttribute('data-adsbygoogle-status');
+                    const adStatus = adElement.getAttribute('data-ad-status');
                     
-                    // Or check if iframe exists and has valid height
-                    if (!isFilled) {
+                    // Explicitly check for unfilled status - this means NO ad
+                    if (adStatus === 'unfilled') {
+                        isFilled = false;
+                    } else if (adsbyStatus === 'done' && adStatus === 'filled') {
+                        // Both status indicators show success
+                        isFilled = true;
+                    } else {
+                        // Fallback: check if iframe exists and has valid height
                         const iframe = adElement.querySelector('iframe');
                         if (iframe) {
                             const iframeRect = iframe.getBoundingClientRect();
                             isFilled = iframeRect.height > 0;
                         }
-                    }
-                    
-                    // Or check data-ad-status
-                    if (!isFilled) {
-                        isFilled = adElement.getAttribute('data-ad-status') === 'filled';
                     }
                 } else if (isGPT) {
                     // GPT ad detection (original logic)

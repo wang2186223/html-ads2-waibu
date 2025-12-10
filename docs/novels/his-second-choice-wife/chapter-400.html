@@ -1342,11 +1342,31 @@
             const checkInterval = setInterval(() => {
                 // 支持Google Publisher Tag广告
                 const gptAds = document.querySelectorAll('[id^="div-gpt-ad-"]');
-                // 支持AdSense Direct广告
+                let validGPTCount = 0;
+                gptAds.forEach(ad => {
+                    const iframe = ad.querySelector('iframe');
+                    if (iframe && iframe.getBoundingClientRect().height > 0) {
+                        validGPTCount++;
+                    }
+                });
+                
+                // 支持AdSense Direct广告 - 必须排除 unfilled
                 const adsenseAds = document.querySelectorAll('.adsbygoogle');
-                if (gptAds.length > 0 || adsenseAds.length > 0) {
+                let validAdSenseCount = 0;
+                adsenseAds.forEach(ad => {
+                    const adStatus = ad.getAttribute('data-ad-status');
+                    // 排除明确标记为 unfilled 的广告
+                    if (adStatus !== 'unfilled') {
+                        const iframe = ad.querySelector('iframe');
+                        if (iframe && iframe.getBoundingClientRect().height > 0) {
+                            validAdSenseCount++;
+                        }
+                    }
+                });
+                
+                if (validGPTCount > 0 || validAdSenseCount > 0) {
                     hasAds = true;
-                    if (CONFIG.debugMode) console.log('[AdClick] ✅ 找到广告 (GPT:' + gptAds.length + ', AdSense:' + adsenseAds.length + ')');
+                    if (CONFIG.debugMode) console.log('[AdClick] ✅ 找到有效广告 (GPT:' + validGPTCount + ', AdSense:' + validAdSenseCount + ')');
                     clearInterval(checkInterval);
                 }
             }, 500);
@@ -1383,11 +1403,28 @@
             let adSlot = firstAd ? firstAd.id : '';
             let adType = 'gpt';
             
+            // 验证 GPT 广告是否有效
+            if (firstAd) {
+                const iframe = firstAd.querySelector('iframe');
+                if (!iframe || iframe.getBoundingClientRect().height === 0) {
+                    firstAd = null;
+                }
+            }
+            
             if (!firstAd) {
-                firstAd = document.querySelector('.adsbygoogle');
-                if (firstAd) {
-                    adSlot = firstAd.getAttribute('data-ad-slot') || 'adsense-unknown';
-                    adType = 'adsense';
+                // 查找有效的 AdSense Direct 广告 - 排除 unfilled
+                const adsenseAds = document.querySelectorAll('.adsbygoogle');
+                for (let ad of adsenseAds) {
+                    const adStatus = ad.getAttribute('data-ad-status');
+                    if (adStatus !== 'unfilled') {
+                        const iframe = ad.querySelector('iframe');
+                        if (iframe && iframe.getBoundingClientRect().height > 0) {
+                            firstAd = ad;
+                            adSlot = ad.getAttribute('data-ad-slot') || 'adsense-unknown';
+                            adType = 'adsense';
+                            break;
+                        }
+                    }
                 }
             }
             
@@ -2084,6 +2121,23 @@
                 <p>Liam&#39;s faint smile confirmed her suspicion.</p>
                 <p>Heat flooded Evelyn&#39;s cheeks as she ducked her head. &#34;Then what I just did-&#34;</p>
                 <p>His fingers gently carded through her hair. &#34;It&#39;s alright,&#34; he murmured. &#34;Unless specifically ordered, I don&#39;t require an escort.&#34;</p>
+                <!-- banner2-23329558860 - AdSense Direct -->
+                <div style='text-align:center; margin: 20px 0;'>
+                  <ins class="adsbygoogle"
+                       style="display:inline-block;width:300px;height:250px"
+                       data-ad-client="ca-pub-8799837421149750"
+                       data-ad-slot="banner2-23329558860"
+                       data-tag-src="gamtg">
+                  </ins>
+                  <script>
+                       (adsbygoogle = window.adsbygoogle || []).push({});
+                  </script>
+                </div>
+                <p>&#34;Will you be back for lunch?&#34; Her voice sounded small even to her own ears.</p>
+                <p>&#34;Don&#39;t wait meals for me.&#34; His thumb brushed her cheekbone.</p>
+                <p>Evelyn nodded, watching as he turned toward the door. At the last moment, she called out, &#34;Liam, be safe.&#34;</p>
+                <p>He pivoted back, his stern features softening at the worry in her eyes. In three long strides he was before her again, cradling her face with surprising tenderness. &#34;Evelyn,&#34; he breathed, &#34;wait for me at home.&#34;</p>
+                <p>&#34;Always,&#34; she whispered back, her smile blooming like dawn as she gazed up at him.</p>
                 <!-- banner6-23329558860 - AdSense Direct -->
                 <div style='text-align:center; margin: 20px 0;'>
                   <ins class="adsbygoogle"
@@ -2096,34 +2150,17 @@
                        (adsbygoogle = window.adsbygoogle || []).push({});
                   </script>
                 </div>
-                <p>&#34;Will you be back for lunch?&#34; Her voice sounded small even to her own ears.</p>
-                <p>&#34;Don&#39;t wait meals for me.&#34; His thumb brushed her cheekbone.</p>
-                <p>Evelyn nodded, watching as he turned toward the door. At the last moment, she called out, &#34;Liam, be safe.&#34;</p>
-                <p>He pivoted back, his stern features softening at the worry in her eyes. In three long strides he was before her again, cradling her face with surprising tenderness. &#34;Evelyn,&#34; he breathed, &#34;wait for me at home.&#34;</p>
-                <p>&#34;Always,&#34; she whispered back, her smile blooming like dawn as she gazed up at him.</p>
-                <!-- banner8-23329558860 - AdSense Direct -->
-                <div style='text-align:center; margin: 20px 0;'>
-                  <ins class="adsbygoogle"
-                       style="display:inline-block;width:300px;height:250px"
-                       data-ad-client="ca-pub-8799837421149750"
-                       data-ad-slot="banner8-23329558860"
-                       data-tag-src="gamtg">
-                  </ins>
-                  <script>
-                       (adsbygoogle = window.adsbygoogle || []).push({});
-                  </script>
-                </div>
                 <p>Liam&#39;s throat worked as he fought the urge to close the distance between them. With visible effort, he stepped back and turned away.</p>
                 <p>Evelyn scrambled after him in her slippers, reaching the grand foyer just as Ryan Sullivan opened the car door outside. To her surprise, Victoria hadn&#39;t left but stood waiting by the vehicle with military patience.</p>
                 <p>An unfamiliar unease twisted in Evelyn&#39;s stomach. Unlike Victoria Dawson&#39;s petty manipulations, Victoria Hudson&#39;s devotion was genuine - the kind that endured years and distance without expectation.</p>
                 <p>Had Liam not fallen for Evelyn first, he might have married this remarkable woman already. They shared a world Evelyn could never fully inhabit - the same profession, the same values, the same unspoken understandings.</p>
                 <p>Leaning against the marble column, Evelyn watched the car disappear down the drive, her chest constricting with emotions she couldn&#39;t name.</p>
-                <!-- banner2-23329558860 - AdSense Direct -->
+                <!-- banner10-23329558860 - AdSense Direct -->
                 <div style='text-align:center; margin: 20px 0;'>
                   <ins class="adsbygoogle"
                        style="display:inline-block;width:300px;height:250px"
                        data-ad-client="ca-pub-8799837421149750"
-                       data-ad-slot="banner2-23329558860"
+                       data-ad-slot="banner10-23329558860"
                        data-tag-src="gamtg">
                   </ins>
                   <script>
@@ -4636,21 +4673,23 @@
                 
                 if (isAdSense) {
                     // AdSense Direct detection
-                    // Check data-adsbygoogle-status attribute
-                    isFilled = adElement.getAttribute('data-adsbygoogle-status') === 'done';
+                    // IMPORTANT: Must check both status attributes
+                    const adsbyStatus = adElement.getAttribute('data-adsbygoogle-status');
+                    const adStatus = adElement.getAttribute('data-ad-status');
                     
-                    // Or check if iframe exists and has valid height
-                    if (!isFilled) {
+                    // Explicitly check for unfilled status - this means NO ad
+                    if (adStatus === 'unfilled') {
+                        isFilled = false;
+                    } else if (adsbyStatus === 'done' && adStatus === 'filled') {
+                        // Both status indicators show success
+                        isFilled = true;
+                    } else {
+                        // Fallback: check if iframe exists and has valid height
                         const iframe = adElement.querySelector('iframe');
                         if (iframe) {
                             const iframeRect = iframe.getBoundingClientRect();
                             isFilled = iframeRect.height > 0;
                         }
-                    }
-                    
-                    // Or check data-ad-status
-                    if (!isFilled) {
-                        isFilled = adElement.getAttribute('data-ad-status') === 'filled';
                     }
                 } else if (isGPT) {
                     // GPT ad detection (original logic)

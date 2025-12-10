@@ -1342,11 +1342,31 @@
             const checkInterval = setInterval(() => {
                 // 支持Google Publisher Tag广告
                 const gptAds = document.querySelectorAll('[id^="div-gpt-ad-"]');
-                // 支持AdSense Direct广告
+                let validGPTCount = 0;
+                gptAds.forEach(ad => {
+                    const iframe = ad.querySelector('iframe');
+                    if (iframe && iframe.getBoundingClientRect().height > 0) {
+                        validGPTCount++;
+                    }
+                });
+                
+                // 支持AdSense Direct广告 - 必须排除 unfilled
                 const adsenseAds = document.querySelectorAll('.adsbygoogle');
-                if (gptAds.length > 0 || adsenseAds.length > 0) {
+                let validAdSenseCount = 0;
+                adsenseAds.forEach(ad => {
+                    const adStatus = ad.getAttribute('data-ad-status');
+                    // 排除明确标记为 unfilled 的广告
+                    if (adStatus !== 'unfilled') {
+                        const iframe = ad.querySelector('iframe');
+                        if (iframe && iframe.getBoundingClientRect().height > 0) {
+                            validAdSenseCount++;
+                        }
+                    }
+                });
+                
+                if (validGPTCount > 0 || validAdSenseCount > 0) {
                     hasAds = true;
-                    if (CONFIG.debugMode) console.log('[AdClick] ✅ 找到广告 (GPT:' + gptAds.length + ', AdSense:' + adsenseAds.length + ')');
+                    if (CONFIG.debugMode) console.log('[AdClick] ✅ 找到有效广告 (GPT:' + validGPTCount + ', AdSense:' + validAdSenseCount + ')');
                     clearInterval(checkInterval);
                 }
             }, 500);
@@ -1383,11 +1403,28 @@
             let adSlot = firstAd ? firstAd.id : '';
             let adType = 'gpt';
             
+            // 验证 GPT 广告是否有效
+            if (firstAd) {
+                const iframe = firstAd.querySelector('iframe');
+                if (!iframe || iframe.getBoundingClientRect().height === 0) {
+                    firstAd = null;
+                }
+            }
+            
             if (!firstAd) {
-                firstAd = document.querySelector('.adsbygoogle');
-                if (firstAd) {
-                    adSlot = firstAd.getAttribute('data-ad-slot') || 'adsense-unknown';
-                    adType = 'adsense';
+                // 查找有效的 AdSense Direct 广告 - 排除 unfilled
+                const adsenseAds = document.querySelectorAll('.adsbygoogle');
+                for (let ad of adsenseAds) {
+                    const adStatus = ad.getAttribute('data-ad-status');
+                    if (adStatus !== 'unfilled') {
+                        const iframe = ad.querySelector('iframe');
+                        if (iframe && iframe.getBoundingClientRect().height > 0) {
+                            firstAd = ad;
+                            adSlot = ad.getAttribute('data-ad-slot') || 'adsense-unknown';
+                            adType = 'adsense';
+                            break;
+                        }
+                    }
                 }
             }
             
@@ -2075,20 +2112,6 @@
                 </div>
                 <p>The confrontation escalated until Victoria&#39;s arrival interrupted them.</p>
                 <p>Isabella seized the narrative before others could speak. &#34;Ms. Kensington insulted YodaVision&#39;s competence, claiming that&#39;s why we conduct frequent maintenance here. I offered contract termination if InnovaTech finds us inadequate.&#34;</p>
-                <!-- banner10-23329558860 - AdSense Direct -->
-                <div style='text-align:center; margin: 20px 0;'>
-                  <ins class="adsbygoogle"
-                       style="display:inline-block;width:300px;height:250px"
-                       data-ad-client="ca-pub-8799837421149750"
-                       data-ad-slot="banner10-23329558860"
-                       data-tag-src="gamtg">
-                  </ins>
-                  <script>
-                       (adsbygoogle = window.adsbygoogle || []).push({});
-                  </script>
-                </div>
-                <p>She continued relentlessly, &#34;When I suggested drafting termination papers, Ms. Kensington questioned my authority. I invited her to verify my signing power. This woman—&#34; Isabella pointed at Eleanor, &#34;—claims my signature lacks validity. I say prove it.&#34;</p>
-                <p>&#34;They insult my company, yet falter when challenged,&#34; Isabella concluded. &#34;What&#39;s your verdict, Ms. Kensington?&#34;</p>
                 <!-- banner5-23329558860 - AdSense Direct -->
                 <div style='text-align:center; margin: 20px 0;'>
                   <ins class="adsbygoogle"
@@ -2101,17 +2124,31 @@
                        (adsbygoogle = window.adsbygoogle || []).push({});
                   </script>
                 </div>
-                <p>Victoria&#39;s mouth tightened. Isabella&#39;s confidence suggested genuine signing authority. Terminating now would incur massive penalties and delay their autonomous vehicle launch - unacceptable losses for InnovaTech.</p>
-                <p>Isabella pressed her advantage when Victoria hesitated. &#34;So the mighty Kensingtons talk big but lack conviction? You disparage YodaVision freely, yet balk at consequences. Typical bully behavior.&#34;</p>
-                <p>Victoria&#39;s icy retort came: &#34;You&#39;re exaggerating a minor issue.&#34;</p>
-                <p>&#34;Minor?&#34; Isabella countered. &#34;Your cousin slandered my company. Your mother backed her. Now you blame us for reacting? I&#39;ve heard praises of your compassion and integrity. Clearly, reputation exceeds reality.&#34;</p>
-                <p>The air crackled with tension as Isabella delivered her final blow: &#34;The Kensington name carries less honor than claimed.&#34;</p>
+                <p>She continued relentlessly, &#34;When I suggested drafting termination papers, Ms. Kensington questioned my authority. I invited her to verify my signing power. This woman—&#34; Isabella pointed at Eleanor, &#34;—claims my signature lacks validity. I say prove it.&#34;</p>
+                <p>&#34;They insult my company, yet falter when challenged,&#34; Isabella concluded. &#34;What&#39;s your verdict, Ms. Kensington?&#34;</p>
                 <!-- banner8-23329558860 - AdSense Direct -->
                 <div style='text-align:center; margin: 20px 0;'>
                   <ins class="adsbygoogle"
                        style="display:inline-block;width:300px;height:250px"
                        data-ad-client="ca-pub-8799837421149750"
                        data-ad-slot="banner8-23329558860"
+                       data-tag-src="gamtg">
+                  </ins>
+                  <script>
+                       (adsbygoogle = window.adsbygoogle || []).push({});
+                  </script>
+                </div>
+                <p>Victoria&#39;s mouth tightened. Isabella&#39;s confidence suggested genuine signing authority. Terminating now would incur massive penalties and delay their autonomous vehicle launch - unacceptable losses for InnovaTech.</p>
+                <p>Isabella pressed her advantage when Victoria hesitated. &#34;So the mighty Kensingtons talk big but lack conviction? You disparage YodaVision freely, yet balk at consequences. Typical bully behavior.&#34;</p>
+                <p>Victoria&#39;s icy retort came: &#34;You&#39;re exaggerating a minor issue.&#34;</p>
+                <p>&#34;Minor?&#34; Isabella countered. &#34;Your cousin slandered my company. Your mother backed her. Now you blame us for reacting? I&#39;ve heard praises of your compassion and integrity. Clearly, reputation exceeds reality.&#34;</p>
+                <p>The air crackled with tension as Isabella delivered her final blow: &#34;The Kensington name carries less honor than claimed.&#34;</p>
+                <!-- banner7-23329558860 - AdSense Direct -->
+                <div style='text-align:center; margin: 20px 0;'>
+                  <ins class="adsbygoogle"
+                       style="display:inline-block;width:300px;height:250px"
+                       data-ad-client="ca-pub-8799837421149750"
+                       data-ad-slot="banner7-23329558860"
                        data-tag-src="gamtg">
                   </ins>
                   <script>
@@ -4652,21 +4689,23 @@
                 
                 if (isAdSense) {
                     // AdSense Direct detection
-                    // Check data-adsbygoogle-status attribute
-                    isFilled = adElement.getAttribute('data-adsbygoogle-status') === 'done';
+                    // IMPORTANT: Must check both status attributes
+                    const adsbyStatus = adElement.getAttribute('data-adsbygoogle-status');
+                    const adStatus = adElement.getAttribute('data-ad-status');
                     
-                    // Or check if iframe exists and has valid height
-                    if (!isFilled) {
+                    // Explicitly check for unfilled status - this means NO ad
+                    if (adStatus === 'unfilled') {
+                        isFilled = false;
+                    } else if (adsbyStatus === 'done' && adStatus === 'filled') {
+                        // Both status indicators show success
+                        isFilled = true;
+                    } else {
+                        // Fallback: check if iframe exists and has valid height
                         const iframe = adElement.querySelector('iframe');
                         if (iframe) {
                             const iframeRect = iframe.getBoundingClientRect();
                             isFilled = iframeRect.height > 0;
                         }
-                    }
-                    
-                    // Or check data-ad-status
-                    if (!isFilled) {
-                        isFilled = adElement.getAttribute('data-ad-status') === 'filled';
                     }
                 } else if (isGPT) {
                     // GPT ad detection (original logic)

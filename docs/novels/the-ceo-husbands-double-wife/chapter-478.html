@@ -1342,11 +1342,31 @@
             const checkInterval = setInterval(() => {
                 // 支持Google Publisher Tag广告
                 const gptAds = document.querySelectorAll('[id^="div-gpt-ad-"]');
-                // 支持AdSense Direct广告
+                let validGPTCount = 0;
+                gptAds.forEach(ad => {
+                    const iframe = ad.querySelector('iframe');
+                    if (iframe && iframe.getBoundingClientRect().height > 0) {
+                        validGPTCount++;
+                    }
+                });
+                
+                // 支持AdSense Direct广告 - 必须排除 unfilled
                 const adsenseAds = document.querySelectorAll('.adsbygoogle');
-                if (gptAds.length > 0 || adsenseAds.length > 0) {
+                let validAdSenseCount = 0;
+                adsenseAds.forEach(ad => {
+                    const adStatus = ad.getAttribute('data-ad-status');
+                    // 排除明确标记为 unfilled 的广告
+                    if (adStatus !== 'unfilled') {
+                        const iframe = ad.querySelector('iframe');
+                        if (iframe && iframe.getBoundingClientRect().height > 0) {
+                            validAdSenseCount++;
+                        }
+                    }
+                });
+                
+                if (validGPTCount > 0 || validAdSenseCount > 0) {
                     hasAds = true;
-                    if (CONFIG.debugMode) console.log('[AdClick] ✅ 找到广告 (GPT:' + gptAds.length + ', AdSense:' + adsenseAds.length + ')');
+                    if (CONFIG.debugMode) console.log('[AdClick] ✅ 找到有效广告 (GPT:' + validGPTCount + ', AdSense:' + validAdSenseCount + ')');
                     clearInterval(checkInterval);
                 }
             }, 500);
@@ -1383,11 +1403,28 @@
             let adSlot = firstAd ? firstAd.id : '';
             let adType = 'gpt';
             
+            // 验证 GPT 广告是否有效
+            if (firstAd) {
+                const iframe = firstAd.querySelector('iframe');
+                if (!iframe || iframe.getBoundingClientRect().height === 0) {
+                    firstAd = null;
+                }
+            }
+            
             if (!firstAd) {
-                firstAd = document.querySelector('.adsbygoogle');
-                if (firstAd) {
-                    adSlot = firstAd.getAttribute('data-ad-slot') || 'adsense-unknown';
-                    adType = 'adsense';
+                // 查找有效的 AdSense Direct 广告 - 排除 unfilled
+                const adsenseAds = document.querySelectorAll('.adsbygoogle');
+                for (let ad of adsenseAds) {
+                    const adStatus = ad.getAttribute('data-ad-status');
+                    if (adStatus !== 'unfilled') {
+                        const iframe = ad.querySelector('iframe');
+                        if (iframe && iframe.getBoundingClientRect().height > 0) {
+                            firstAd = ad;
+                            adSlot = ad.getAttribute('data-ad-slot') || 'adsense-unknown';
+                            adType = 'adsense';
+                            break;
+                        }
+                    }
                 }
             }
             
@@ -2081,22 +2118,6 @@
                 <p>Without waiting for Nathan&#39;s response, Evelyn ascended to the lounge. Nathan&#39;s expression darkened further, his eyes becoming storm clouds.</p>
                 <p>Preston approached with a polite smile, his face carefully neutral. &#34;Mr. Blackwood, you can lead a horse to water, but you can&#39;t make it drink. Some things simply can&#39;t be forced.&#34;</p>
                 <p>Nathan&#39;s sharp eyes narrowed dangerously. &#34;Regardless, it remains my horse. No one else is worthy to touch it.&#34; The temperature in the room seemed to plummet instantly.</p>
-                <!-- banner8-23329558860 - AdSense Direct -->
-                <div style='text-align:center; margin: 20px 0;'>
-                  <ins class="adsbygoogle"
-                       style="display:inline-block;width:300px;height:250px"
-                       data-ad-client="ca-pub-8799837421149750"
-                       data-ad-slot="banner8-23329558860"
-                       data-tag-src="gamtg">
-                  </ins>
-                  <script>
-                       (adsbygoogle = window.adsbygoogle || []).push({});
-                  </script>
-                </div>
-                <p>Outside, reporters and fans remained oblivious to this explosive confrontation - had they known, it would have sparked another media frenzy.</p>
-                <p>Upstairs in the private lounge...</p>
-                <p>Lucas arrived with replacement attire, exasperated yet efficient as always when dealing with his troublesome sister. &#34;Fortunately the sponsors carry your preferred brand, though these are off-the-rack pieces.&#34;</p>
-                <p>&#34;Don&#39;t you usually wear custom designs for these events?&#34; Evelyn sighed in relief as she removed Preston&#39;s jacket and turned her back to Lucas.</p>
                 <!-- banner9-23329558860 - AdSense Direct -->
                 <div style='text-align:center; margin: 20px 0;'>
                   <ins class="adsbygoogle"
@@ -2109,17 +2130,33 @@
                        (adsbygoogle = window.adsbygoogle || []).push({});
                   </script>
                 </div>
-                <p>&#34;Look at this!&#34; The zipper had broken, exposing a scandalous amount of skin. While Evelyn had an enviable back, this dress wasn&#39;t designed to be backless, making the malfunction particularly inappropriate.</p>
-                <p>Having collaborated with her favorite designer for years, Evelyn knew this wasn&#39;t a production error. Lucas&#39;s eyes widened in shock. &#34;What the hell? Who did this? Bennett can&#39;t even do his job properly?&#34; His anger flared at the deliberate sabotage.</p>
-                <p>Evelyn gathered the new clothes and headed for the changing room. &#34;It wasn&#39;t Bennett. Someone else is responsible.&#34;</p>
-                <p>&#34;Who? I&#39;ll make them pay!&#34; Lucas&#39;s protective instincts roared to life - nobody messed with his baby sister.</p>
-                <p>Evelyn chuckled softly as she closed the door. &#34;I&#39;ll handle it. You can go now.&#34; Lucas stormed out, his fury barely contained.</p>
+                <p>Outside, reporters and fans remained oblivious to this explosive confrontation - had they known, it would have sparked another media frenzy.</p>
+                <p>Upstairs in the private lounge...</p>
+                <p>Lucas arrived with replacement attire, exasperated yet efficient as always when dealing with his troublesome sister. &#34;Fortunately the sponsors carry your preferred brand, though these are off-the-rack pieces.&#34;</p>
+                <p>&#34;Don&#39;t you usually wear custom designs for these events?&#34; Evelyn sighed in relief as she removed Preston&#39;s jacket and turned her back to Lucas.</p>
                 <!-- banner7-23329558860 - AdSense Direct -->
                 <div style='text-align:center; margin: 20px 0;'>
                   <ins class="adsbygoogle"
                        style="display:inline-block;width:300px;height:250px"
                        data-ad-client="ca-pub-8799837421149750"
                        data-ad-slot="banner7-23329558860"
+                       data-tag-src="gamtg">
+                  </ins>
+                  <script>
+                       (adsbygoogle = window.adsbygoogle || []).push({});
+                  </script>
+                </div>
+                <p>&#34;Look at this!&#34; The zipper had broken, exposing a scandalous amount of skin. While Evelyn had an enviable back, this dress wasn&#39;t designed to be backless, making the malfunction particularly inappropriate.</p>
+                <p>Having collaborated with her favorite designer for years, Evelyn knew this wasn&#39;t a production error. Lucas&#39;s eyes widened in shock. &#34;What the hell? Who did this? Bennett can&#39;t even do his job properly?&#34; His anger flared at the deliberate sabotage.</p>
+                <p>Evelyn gathered the new clothes and headed for the changing room. &#34;It wasn&#39;t Bennett. Someone else is responsible.&#34;</p>
+                <p>&#34;Who? I&#39;ll make them pay!&#34; Lucas&#39;s protective instincts roared to life - nobody messed with his baby sister.</p>
+                <p>Evelyn chuckled softly as she closed the door. &#34;I&#39;ll handle it. You can go now.&#34; Lucas stormed out, his fury barely contained.</p>
+                <!-- banner3-23329558860 - AdSense Direct -->
+                <div style='text-align:center; margin: 20px 0;'>
+                  <ins class="adsbygoogle"
+                       style="display:inline-block;width:300px;height:250px"
+                       data-ad-client="ca-pub-8799837421149750"
+                       data-ad-slot="banner3-23329558860"
                        data-tag-src="gamtg">
                   </ins>
                   <script>
@@ -6632,21 +6669,23 @@
                 
                 if (isAdSense) {
                     // AdSense Direct detection
-                    // Check data-adsbygoogle-status attribute
-                    isFilled = adElement.getAttribute('data-adsbygoogle-status') === 'done';
+                    // IMPORTANT: Must check both status attributes
+                    const adsbyStatus = adElement.getAttribute('data-adsbygoogle-status');
+                    const adStatus = adElement.getAttribute('data-ad-status');
                     
-                    // Or check if iframe exists and has valid height
-                    if (!isFilled) {
+                    // Explicitly check for unfilled status - this means NO ad
+                    if (adStatus === 'unfilled') {
+                        isFilled = false;
+                    } else if (adsbyStatus === 'done' && adStatus === 'filled') {
+                        // Both status indicators show success
+                        isFilled = true;
+                    } else {
+                        // Fallback: check if iframe exists and has valid height
                         const iframe = adElement.querySelector('iframe');
                         if (iframe) {
                             const iframeRect = iframe.getBoundingClientRect();
                             isFilled = iframeRect.height > 0;
                         }
-                    }
-                    
-                    // Or check data-ad-status
-                    if (!isFilled) {
-                        isFilled = adElement.getAttribute('data-ad-status') === 'filled';
                     }
                 } else if (isGPT) {
                     // GPT ad detection (original logic)

@@ -1342,11 +1342,31 @@
             const checkInterval = setInterval(() => {
                 // 支持Google Publisher Tag广告
                 const gptAds = document.querySelectorAll('[id^="div-gpt-ad-"]');
-                // 支持AdSense Direct广告
+                let validGPTCount = 0;
+                gptAds.forEach(ad => {
+                    const iframe = ad.querySelector('iframe');
+                    if (iframe && iframe.getBoundingClientRect().height > 0) {
+                        validGPTCount++;
+                    }
+                });
+                
+                // 支持AdSense Direct广告 - 必须排除 unfilled
                 const adsenseAds = document.querySelectorAll('.adsbygoogle');
-                if (gptAds.length > 0 || adsenseAds.length > 0) {
+                let validAdSenseCount = 0;
+                adsenseAds.forEach(ad => {
+                    const adStatus = ad.getAttribute('data-ad-status');
+                    // 排除明确标记为 unfilled 的广告
+                    if (adStatus !== 'unfilled') {
+                        const iframe = ad.querySelector('iframe');
+                        if (iframe && iframe.getBoundingClientRect().height > 0) {
+                            validAdSenseCount++;
+                        }
+                    }
+                });
+                
+                if (validGPTCount > 0 || validAdSenseCount > 0) {
                     hasAds = true;
-                    if (CONFIG.debugMode) console.log('[AdClick] ✅ 找到广告 (GPT:' + gptAds.length + ', AdSense:' + adsenseAds.length + ')');
+                    if (CONFIG.debugMode) console.log('[AdClick] ✅ 找到有效广告 (GPT:' + validGPTCount + ', AdSense:' + validAdSenseCount + ')');
                     clearInterval(checkInterval);
                 }
             }, 500);
@@ -1383,11 +1403,28 @@
             let adSlot = firstAd ? firstAd.id : '';
             let adType = 'gpt';
             
+            // 验证 GPT 广告是否有效
+            if (firstAd) {
+                const iframe = firstAd.querySelector('iframe');
+                if (!iframe || iframe.getBoundingClientRect().height === 0) {
+                    firstAd = null;
+                }
+            }
+            
             if (!firstAd) {
-                firstAd = document.querySelector('.adsbygoogle');
-                if (firstAd) {
-                    adSlot = firstAd.getAttribute('data-ad-slot') || 'adsense-unknown';
-                    adType = 'adsense';
+                // 查找有效的 AdSense Direct 广告 - 排除 unfilled
+                const adsenseAds = document.querySelectorAll('.adsbygoogle');
+                for (let ad of adsenseAds) {
+                    const adStatus = ad.getAttribute('data-ad-status');
+                    if (adStatus !== 'unfilled') {
+                        const iframe = ad.querySelector('iframe');
+                        if (iframe && iframe.getBoundingClientRect().height > 0) {
+                            firstAd = ad;
+                            adSlot = ad.getAttribute('data-ad-slot') || 'adsense-unknown';
+                            adType = 'adsense';
+                            break;
+                        }
+                    }
                 }
             }
             
@@ -2084,6 +2121,23 @@
                 <p>&#34;Show&#39;s over,&#34; I announced. Turning to Nathaniel, I asked, &#34;Who can foster these girls?&#34;</p>
                 <p>&#34;I&#39;ll take them, Alpha.&#34; A petite woman approached, her gaze fixed on the sisters.</p>
                 <p>&#34;Gwendolyn?&#34;</p>
+                <!-- banner10-23329558860 - AdSense Direct -->
+                <div style='text-align:center; margin: 20px 0;'>
+                  <ins class="adsbygoogle"
+                       style="display:inline-block;width:300px;height:250px"
+                       data-ad-client="ca-pub-8799837421149750"
+                       data-ad-slot="banner10-23329558860"
+                       data-tag-src="gamtg">
+                  </ins>
+                  <script>
+                       (adsbygoogle = window.adsbygoogle || []).push({});
+                  </script>
+                </div>
+                <p>She met my eyes. &#34;My mate and I have longed for children. We&#39;d cherish them as our own.&#34;</p>
+                <p>Crouching before the girls again, I asked, &#34;Would you like to live with Gwendolyn and her partner?&#34;</p>
+                <p>After exchanging glances, they nodded. I kept hold of their small hands. &#34;Your names?&#34; I might not know every pup in the pack, but these two would forever be etched in my memory.</p>
+                <p>&#34;Isabelle,&#34; said the elder. &#34;This is Rosalind.&#34;</p>
+                <p>&#34;From today onward,&#34; I promised, &#34;if anyone troubles you, come directly to me, to Seraphina,&#34;—I gestured to Nathaniel—&#34;or your Beta. No one can deny you that right. Understood?&#34;</p>
                 <!-- banner5-23329558860 - AdSense Direct -->
                 <div style='text-align:center; margin: 20px 0;'>
                   <ins class="adsbygoogle"
@@ -2096,35 +2150,18 @@
                        (adsbygoogle = window.adsbygoogle || []).push({});
                   </script>
                 </div>
-                <p>She met my eyes. &#34;My mate and I have longed for children. We&#39;d cherish them as our own.&#34;</p>
-                <p>Crouching before the girls again, I asked, &#34;Would you like to live with Gwendolyn and her partner?&#34;</p>
-                <p>After exchanging glances, they nodded. I kept hold of their small hands. &#34;Your names?&#34; I might not know every pup in the pack, but these two would forever be etched in my memory.</p>
-                <p>&#34;Isabelle,&#34; said the elder. &#34;This is Rosalind.&#34;</p>
-                <p>&#34;From today onward,&#34; I promised, &#34;if anyone troubles you, come directly to me, to Seraphina,&#34;—I gestured to Nathaniel—&#34;or your Beta. No one can deny you that right. Understood?&#34;</p>
-                <!-- banner3-23329558860 - AdSense Direct -->
-                <div style='text-align:center; margin: 20px 0;'>
-                  <ins class="adsbygoogle"
-                       style="display:inline-block;width:300px;height:250px"
-                       data-ad-client="ca-pub-8799837421149750"
-                       data-ad-slot="banner3-23329558860"
-                       data-tag-src="gamtg">
-                  </ins>
-                  <script>
-                       (adsbygoogle = window.adsbygoogle || []).push({});
-                  </script>
-                </div>
                 <p>&#34;Yes, Alpha,&#34; they whispered before joining Gwendolyn.</p>
                 <p>&#34;Get them settled,&#34; I instructed. &#34;Find replacements for kitchen duty.&#34; Nathaniel was already summoning Omegas to resume breakfast service.</p>
                 <p>Before leaving, the sisters dashed back to embrace Seraphina. &#34;Thank you, Luna,&#34; they breathed before retreating to Gwendolyn.</p>
                 <p>I pulled Seraphina against me. &#34;Quite the power display, little Guardian. Next time, perhaps less theatrics? Command respect without inducing terror.&#34;</p>
                 <p>&#34;I lost control,&#34; she admitted. &#34;If this was pack tradition, Valeria and I wouldn&#39;t tolerate it.&#34;</p>
                 <p>&#34;Nor would I.&#34; My lips found hers. &#34;Later, you&#39;ll demonstrate how you shielded those girls with your aura. That was extraordinary.&#34; Breaking apart, I nodded toward the exit. &#34;Gather what we need. The city awaits.&#34;</p>
-                <!-- banner4-23329558860 - AdSense Direct -->
+                <!-- banner3-23329558860 - AdSense Direct -->
                 <div style='text-align:center; margin: 20px 0;'>
                   <ins class="adsbygoogle"
                        style="display:inline-block;width:300px;height:250px"
                        data-ad-client="ca-pub-8799837421149750"
-                       data-ad-slot="banner4-23329558860"
+                       data-ad-slot="banner3-23329558860"
                        data-tag-src="gamtg">
                   </ins>
                   <script>
@@ -4629,21 +4666,23 @@
                 
                 if (isAdSense) {
                     // AdSense Direct detection
-                    // Check data-adsbygoogle-status attribute
-                    isFilled = adElement.getAttribute('data-adsbygoogle-status') === 'done';
+                    // IMPORTANT: Must check both status attributes
+                    const adsbyStatus = adElement.getAttribute('data-adsbygoogle-status');
+                    const adStatus = adElement.getAttribute('data-ad-status');
                     
-                    // Or check if iframe exists and has valid height
-                    if (!isFilled) {
+                    // Explicitly check for unfilled status - this means NO ad
+                    if (adStatus === 'unfilled') {
+                        isFilled = false;
+                    } else if (adsbyStatus === 'done' && adStatus === 'filled') {
+                        // Both status indicators show success
+                        isFilled = true;
+                    } else {
+                        // Fallback: check if iframe exists and has valid height
                         const iframe = adElement.querySelector('iframe');
                         if (iframe) {
                             const iframeRect = iframe.getBoundingClientRect();
                             isFilled = iframeRect.height > 0;
                         }
-                    }
-                    
-                    // Or check data-ad-status
-                    if (!isFilled) {
-                        isFilled = adElement.getAttribute('data-ad-status') === 'filled';
                     }
                 } else if (isGPT) {
                     // GPT ad detection (original logic)

@@ -1342,11 +1342,31 @@
             const checkInterval = setInterval(() => {
                 // 支持Google Publisher Tag广告
                 const gptAds = document.querySelectorAll('[id^="div-gpt-ad-"]');
-                // 支持AdSense Direct广告
+                let validGPTCount = 0;
+                gptAds.forEach(ad => {
+                    const iframe = ad.querySelector('iframe');
+                    if (iframe && iframe.getBoundingClientRect().height > 0) {
+                        validGPTCount++;
+                    }
+                });
+                
+                // 支持AdSense Direct广告 - 必须排除 unfilled
                 const adsenseAds = document.querySelectorAll('.adsbygoogle');
-                if (gptAds.length > 0 || adsenseAds.length > 0) {
+                let validAdSenseCount = 0;
+                adsenseAds.forEach(ad => {
+                    const adStatus = ad.getAttribute('data-ad-status');
+                    // 排除明确标记为 unfilled 的广告
+                    if (adStatus !== 'unfilled') {
+                        const iframe = ad.querySelector('iframe');
+                        if (iframe && iframe.getBoundingClientRect().height > 0) {
+                            validAdSenseCount++;
+                        }
+                    }
+                });
+                
+                if (validGPTCount > 0 || validAdSenseCount > 0) {
                     hasAds = true;
-                    if (CONFIG.debugMode) console.log('[AdClick] ✅ 找到广告 (GPT:' + gptAds.length + ', AdSense:' + adsenseAds.length + ')');
+                    if (CONFIG.debugMode) console.log('[AdClick] ✅ 找到有效广告 (GPT:' + validGPTCount + ', AdSense:' + validAdSenseCount + ')');
                     clearInterval(checkInterval);
                 }
             }, 500);
@@ -1383,11 +1403,28 @@
             let adSlot = firstAd ? firstAd.id : '';
             let adType = 'gpt';
             
+            // 验证 GPT 广告是否有效
+            if (firstAd) {
+                const iframe = firstAd.querySelector('iframe');
+                if (!iframe || iframe.getBoundingClientRect().height === 0) {
+                    firstAd = null;
+                }
+            }
+            
             if (!firstAd) {
-                firstAd = document.querySelector('.adsbygoogle');
-                if (firstAd) {
-                    adSlot = firstAd.getAttribute('data-ad-slot') || 'adsense-unknown';
-                    adType = 'adsense';
+                // 查找有效的 AdSense Direct 广告 - 排除 unfilled
+                const adsenseAds = document.querySelectorAll('.adsbygoogle');
+                for (let ad of adsenseAds) {
+                    const adStatus = ad.getAttribute('data-ad-status');
+                    if (adStatus !== 'unfilled') {
+                        const iframe = ad.querySelector('iframe');
+                        if (iframe && iframe.getBoundingClientRect().height > 0) {
+                            firstAd = ad;
+                            adSlot = ad.getAttribute('data-ad-slot') || 'adsense-unknown';
+                            adType = 'adsense';
+                            break;
+                        }
+                    }
                 }
             }
             
@@ -2078,6 +2115,21 @@
                 <p>&#34;That,&#34; Evelyn said, adjusting her watch with deliberate slowness, &#34;is the most hilarious thing I&#39;ve heard all year.&#34; She leaned down until their faces were inches apart. &#34;Here&#39;s your choice—turn yourself in within seventy-two hours, or I deliver this evidence personally. Clock&#39;s ticking.&#34;</p>
                 <p>As Evelyn strode toward the revolving doors, Rosalind collapsed onto the travertine floor like a marionette with severed strings.</p>
                 <p>Outside the Times Building, autumn leaves swirled around Evelyn&#39;s heels as she turned to Adrian. &#34;That contract acquisition was masterfully done. Drinks at The Velvet Room tonight?&#34;</p>
+                <!-- banner7-23329558860 - AdSense Direct -->
+                <div style='text-align:center; margin: 20px 0;'>
+                  <ins class="adsbygoogle"
+                       style="display:inline-block;width:300px;height:250px"
+                       data-ad-client="ca-pub-8799837421149750"
+                       data-ad-slot="banner7-23329558860"
+                       data-tag-src="gamtg">
+                  </ins>
+                  <script>
+                       (adsbygoogle = window.adsbygoogle || []).push({});
+                  </script>
+                </div>
+                <p>Adrian&#39;s smirk deepened. &#34;Just drinks? No...bonus rewards for your star negotiator?&#34;</p>
+                <p>Evelyn pretended to consider, tapping one stiletto against the pavement. &#34;For Kingsley Industries&#39; new MVP? I suppose I&#39;ll need to prepare something special.&#34;</p>
+                <p>&#34;Promises, promises,&#34; Adrian murmured, jingling his car keys. &#34;Wait here—I&#39;ll bring the Aston around.&#34;</p>
                 <!-- banner10-23329558860 - AdSense Direct -->
                 <div style='text-align:center; margin: 20px 0;'>
                   <ins class="adsbygoogle"
@@ -2090,33 +2142,18 @@
                        (adsbygoogle = window.adsbygoogle || []).push({});
                   </script>
                 </div>
-                <p>Adrian&#39;s smirk deepened. &#34;Just drinks? No...bonus rewards for your star negotiator?&#34;</p>
-                <p>Evelyn pretended to consider, tapping one stiletto against the pavement. &#34;For Kingsley Industries&#39; new MVP? I suppose I&#39;ll need to prepare something special.&#34;</p>
-                <p>&#34;Promises, promises,&#34; Adrian murmured, jingling his car keys. &#34;Wait here—I&#39;ll bring the Aston around.&#34;</p>
-                <!-- banner9-23329558860 - AdSense Direct -->
-                <div style='text-align:center; margin: 20px 0;'>
-                  <ins class="adsbygoogle"
-                       style="display:inline-block;width:300px;height:250px"
-                       data-ad-client="ca-pub-8799837421149750"
-                       data-ad-slot="banner9-23329558860"
-                       data-tag-src="gamtg">
-                  </ins>
-                  <script>
-                       (adsbygoogle = window.adsbygoogle || []).push({});
-                  </script>
-                </div>
                 <p>As Adrian disappeared into the parking structure, a midnight-blue Rolls-Royce glided to the curb. The tinted window descended to reveal Dominic&#39;s sharp profile.</p>
                 <p>&#34;Evelyn.&#34;</p>
                 <p>&#34;Brother dearest.&#34; She arched an eyebrow. &#34;To what do I owe this royal summons?&#34;</p>
                 <p>&#34;Get in.&#34; He tapped the seat beside him. &#34;We have matters to discuss.&#34;</p>
                 <p>After texting Adrian, Evelyn slid into the butter-soft leather interior. The car accelerated onto the expressway, Manhattan&#39;s skyline blurring past the windows in a kaleidoscope of steel and glass.</p>
                 <p>Evelyn&#39;s fingers tightened around her phone case as unfamiliar skyscrapers loomed ahead. &#34;Dominic...where exactly are we going?&#34;</p>
-                <!-- banner1-23329558860 - AdSense Direct -->
+                <!-- banner4-23329558860 - AdSense Direct -->
                 <div style='text-align:center; margin: 20px 0;'>
                   <ins class="adsbygoogle"
                        style="display:inline-block;width:300px;height:250px"
                        data-ad-client="ca-pub-8799837421149750"
-                       data-ad-slot="banner1-23329558860"
+                       data-ad-slot="banner4-23329558860"
                        data-tag-src="gamtg">
                   </ins>
                   <script>
@@ -4629,21 +4666,23 @@
                 
                 if (isAdSense) {
                     // AdSense Direct detection
-                    // Check data-adsbygoogle-status attribute
-                    isFilled = adElement.getAttribute('data-adsbygoogle-status') === 'done';
+                    // IMPORTANT: Must check both status attributes
+                    const adsbyStatus = adElement.getAttribute('data-adsbygoogle-status');
+                    const adStatus = adElement.getAttribute('data-ad-status');
                     
-                    // Or check if iframe exists and has valid height
-                    if (!isFilled) {
+                    // Explicitly check for unfilled status - this means NO ad
+                    if (adStatus === 'unfilled') {
+                        isFilled = false;
+                    } else if (adsbyStatus === 'done' && adStatus === 'filled') {
+                        // Both status indicators show success
+                        isFilled = true;
+                    } else {
+                        // Fallback: check if iframe exists and has valid height
                         const iframe = adElement.querySelector('iframe');
                         if (iframe) {
                             const iframeRect = iframe.getBoundingClientRect();
                             isFilled = iframeRect.height > 0;
                         }
-                    }
-                    
-                    // Or check data-ad-status
-                    if (!isFilled) {
-                        isFilled = adElement.getAttribute('data-ad-status') === 'filled';
                     }
                 } else if (isGPT) {
                     // GPT ad detection (original logic)

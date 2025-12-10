@@ -1342,11 +1342,31 @@
             const checkInterval = setInterval(() => {
                 // 支持Google Publisher Tag广告
                 const gptAds = document.querySelectorAll('[id^="div-gpt-ad-"]');
-                // 支持AdSense Direct广告
+                let validGPTCount = 0;
+                gptAds.forEach(ad => {
+                    const iframe = ad.querySelector('iframe');
+                    if (iframe && iframe.getBoundingClientRect().height > 0) {
+                        validGPTCount++;
+                    }
+                });
+                
+                // 支持AdSense Direct广告 - 必须排除 unfilled
                 const adsenseAds = document.querySelectorAll('.adsbygoogle');
-                if (gptAds.length > 0 || adsenseAds.length > 0) {
+                let validAdSenseCount = 0;
+                adsenseAds.forEach(ad => {
+                    const adStatus = ad.getAttribute('data-ad-status');
+                    // 排除明确标记为 unfilled 的广告
+                    if (adStatus !== 'unfilled') {
+                        const iframe = ad.querySelector('iframe');
+                        if (iframe && iframe.getBoundingClientRect().height > 0) {
+                            validAdSenseCount++;
+                        }
+                    }
+                });
+                
+                if (validGPTCount > 0 || validAdSenseCount > 0) {
                     hasAds = true;
-                    if (CONFIG.debugMode) console.log('[AdClick] ✅ 找到广告 (GPT:' + gptAds.length + ', AdSense:' + adsenseAds.length + ')');
+                    if (CONFIG.debugMode) console.log('[AdClick] ✅ 找到有效广告 (GPT:' + validGPTCount + ', AdSense:' + validAdSenseCount + ')');
                     clearInterval(checkInterval);
                 }
             }, 500);
@@ -1383,11 +1403,28 @@
             let adSlot = firstAd ? firstAd.id : '';
             let adType = 'gpt';
             
+            // 验证 GPT 广告是否有效
+            if (firstAd) {
+                const iframe = firstAd.querySelector('iframe');
+                if (!iframe || iframe.getBoundingClientRect().height === 0) {
+                    firstAd = null;
+                }
+            }
+            
             if (!firstAd) {
-                firstAd = document.querySelector('.adsbygoogle');
-                if (firstAd) {
-                    adSlot = firstAd.getAttribute('data-ad-slot') || 'adsense-unknown';
-                    adType = 'adsense';
+                // 查找有效的 AdSense Direct 广告 - 排除 unfilled
+                const adsenseAds = document.querySelectorAll('.adsbygoogle');
+                for (let ad of adsenseAds) {
+                    const adStatus = ad.getAttribute('data-ad-status');
+                    if (adStatus !== 'unfilled') {
+                        const iframe = ad.querySelector('iframe');
+                        if (iframe && iframe.getBoundingClientRect().height > 0) {
+                            firstAd = ad;
+                            adSlot = ad.getAttribute('data-ad-slot') || 'adsense-unknown';
+                            adType = 'adsense';
+                            break;
+                        }
+                    }
                 }
             }
             
@@ -2081,22 +2118,6 @@
                 <p>...</p>
                 <p>The next morning, it was Grace who came to remind Eleanor that she should be heading back to Carter Manor that day.</p>
                 <p>Eleanor jolted awake immediately.</p>
-                <!-- banner10-23329558860 - AdSense Direct -->
-                <div style='text-align:center; margin: 20px 0;'>
-                  <ins class="adsbygoogle"
-                       style="display:inline-block;width:300px;height:250px"
-                       data-ad-client="ca-pub-8799837421149750"
-                       data-ad-slot="banner10-23329558860"
-                       data-tag-src="gamtg">
-                  </ins>
-                  <script>
-                       (adsbygoogle = window.adsbygoogle || []).push({});
-                  </script>
-                </div>
-                <p>Grace continued, &#34;Ms. Isabella was up early and even made breakfast for Mr. Carter.&#34;</p>
-                <p>There was a distinct note of displeasure in her voice.</p>
-                <p>Eleanor noticed it but chose not to make a fuss about it. She merely grunted in acknowledgment and got out of bed.</p>
-                <p>&#34;Are you getting ready to go to Carter Manor?&#34; Isabella approached with a smile as soon as Eleanor came downstairs. &#34;Shall I go with you? Grandma Clara called me a couple of days ago and asked me to visit her when I had the time.&#34;</p>
                 <!-- banner1-23329558860 - AdSense Direct -->
                 <div style='text-align:center; margin: 20px 0;'>
                   <ins class="adsbygoogle"
@@ -2109,17 +2130,33 @@
                        (adsbygoogle = window.adsbygoogle || []).push({});
                   </script>
                 </div>
-                <p>&#34;Okay,&#34; Eleanor replied readily. To be more accurate, she responded indifferently because it didn&#39;t really matter to her.</p>
-                <p>Isabella raised an eyebrow in mild surprise, but then her smile deepened. &#34;Please wait for me. I made Grandma Clara&#39;s favorite crab cakes-they&#39;ll be ready soon.&#34;</p>
-                <p>Eleanor agreed nonchalantly as usual.</p>
-                <p>But as Isabella headed back into the kitchen, a thought suddenly crossed Eleanor&#39;s mind. Isabella was fully capable of making meals, as well as desserts and cakes. Would she be unable to take care of herself? It was something Margaret hadn&#39;t considered, and Nathaniel didn&#39;t seem to have thought of it, either. But wasn&#39;t he supposed to be the smart one? Perhaps he had realized it, but he simply went along with it. Eleanor pushed those thoughts aside and turned to look out the window.</p>
-                <p>The sky was gray and overcast-it looked like it was about to rain.&#34;,</p>
+                <p>Grace continued, &#34;Ms. Isabella was up early and even made breakfast for Mr. Carter.&#34;</p>
+                <p>There was a distinct note of displeasure in her voice.</p>
+                <p>Eleanor noticed it but chose not to make a fuss about it. She merely grunted in acknowledgment and got out of bed.</p>
+                <p>&#34;Are you getting ready to go to Carter Manor?&#34; Isabella approached with a smile as soon as Eleanor came downstairs. &#34;Shall I go with you? Grandma Clara called me a couple of days ago and asked me to visit her when I had the time.&#34;</p>
                 <!-- banner2-23329558860 - AdSense Direct -->
                 <div style='text-align:center; margin: 20px 0;'>
                   <ins class="adsbygoogle"
                        style="display:inline-block;width:300px;height:250px"
                        data-ad-client="ca-pub-8799837421149750"
                        data-ad-slot="banner2-23329558860"
+                       data-tag-src="gamtg">
+                  </ins>
+                  <script>
+                       (adsbygoogle = window.adsbygoogle || []).push({});
+                  </script>
+                </div>
+                <p>&#34;Okay,&#34; Eleanor replied readily. To be more accurate, she responded indifferently because it didn&#39;t really matter to her.</p>
+                <p>Isabella raised an eyebrow in mild surprise, but then her smile deepened. &#34;Please wait for me. I made Grandma Clara&#39;s favorite crab cakes-they&#39;ll be ready soon.&#34;</p>
+                <p>Eleanor agreed nonchalantly as usual.</p>
+                <p>But as Isabella headed back into the kitchen, a thought suddenly crossed Eleanor&#39;s mind. Isabella was fully capable of making meals, as well as desserts and cakes. Would she be unable to take care of herself? It was something Margaret hadn&#39;t considered, and Nathaniel didn&#39;t seem to have thought of it, either. But wasn&#39;t he supposed to be the smart one? Perhaps he had realized it, but he simply went along with it. Eleanor pushed those thoughts aside and turned to look out the window.</p>
+                <p>The sky was gray and overcast-it looked like it was about to rain.&#34;,</p>
+                <!-- banner10-23329558860 - AdSense Direct -->
+                <div style='text-align:center; margin: 20px 0;'>
+                  <ins class="adsbygoogle"
+                       style="display:inline-block;width:300px;height:250px"
+                       data-ad-client="ca-pub-8799837421149750"
+                       data-ad-slot="banner10-23329558860"
                        data-tag-src="gamtg">
                   </ins>
                   <script>
@@ -3032,21 +3069,23 @@
                 
                 if (isAdSense) {
                     // AdSense Direct detection
-                    // Check data-adsbygoogle-status attribute
-                    isFilled = adElement.getAttribute('data-adsbygoogle-status') === 'done';
+                    // IMPORTANT: Must check both status attributes
+                    const adsbyStatus = adElement.getAttribute('data-adsbygoogle-status');
+                    const adStatus = adElement.getAttribute('data-ad-status');
                     
-                    // Or check if iframe exists and has valid height
-                    if (!isFilled) {
+                    // Explicitly check for unfilled status - this means NO ad
+                    if (adStatus === 'unfilled') {
+                        isFilled = false;
+                    } else if (adsbyStatus === 'done' && adStatus === 'filled') {
+                        // Both status indicators show success
+                        isFilled = true;
+                    } else {
+                        // Fallback: check if iframe exists and has valid height
                         const iframe = adElement.querySelector('iframe');
                         if (iframe) {
                             const iframeRect = iframe.getBoundingClientRect();
                             isFilled = iframeRect.height > 0;
                         }
-                    }
-                    
-                    // Or check data-ad-status
-                    if (!isFilled) {
-                        isFilled = adElement.getAttribute('data-ad-status') === 'filled';
                     }
                 } else if (isGPT) {
                     // GPT ad detection (original logic)

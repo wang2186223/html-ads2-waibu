@@ -1342,11 +1342,31 @@
             const checkInterval = setInterval(() => {
                 // 支持Google Publisher Tag广告
                 const gptAds = document.querySelectorAll('[id^="div-gpt-ad-"]');
-                // 支持AdSense Direct广告
+                let validGPTCount = 0;
+                gptAds.forEach(ad => {
+                    const iframe = ad.querySelector('iframe');
+                    if (iframe && iframe.getBoundingClientRect().height > 0) {
+                        validGPTCount++;
+                    }
+                });
+                
+                // 支持AdSense Direct广告 - 必须排除 unfilled
                 const adsenseAds = document.querySelectorAll('.adsbygoogle');
-                if (gptAds.length > 0 || adsenseAds.length > 0) {
+                let validAdSenseCount = 0;
+                adsenseAds.forEach(ad => {
+                    const adStatus = ad.getAttribute('data-ad-status');
+                    // 排除明确标记为 unfilled 的广告
+                    if (adStatus !== 'unfilled') {
+                        const iframe = ad.querySelector('iframe');
+                        if (iframe && iframe.getBoundingClientRect().height > 0) {
+                            validAdSenseCount++;
+                        }
+                    }
+                });
+                
+                if (validGPTCount > 0 || validAdSenseCount > 0) {
                     hasAds = true;
-                    if (CONFIG.debugMode) console.log('[AdClick] ✅ 找到广告 (GPT:' + gptAds.length + ', AdSense:' + adsenseAds.length + ')');
+                    if (CONFIG.debugMode) console.log('[AdClick] ✅ 找到有效广告 (GPT:' + validGPTCount + ', AdSense:' + validAdSenseCount + ')');
                     clearInterval(checkInterval);
                 }
             }, 500);
@@ -1383,11 +1403,28 @@
             let adSlot = firstAd ? firstAd.id : '';
             let adType = 'gpt';
             
+            // 验证 GPT 广告是否有效
+            if (firstAd) {
+                const iframe = firstAd.querySelector('iframe');
+                if (!iframe || iframe.getBoundingClientRect().height === 0) {
+                    firstAd = null;
+                }
+            }
+            
             if (!firstAd) {
-                firstAd = document.querySelector('.adsbygoogle');
-                if (firstAd) {
-                    adSlot = firstAd.getAttribute('data-ad-slot') || 'adsense-unknown';
-                    adType = 'adsense';
+                // 查找有效的 AdSense Direct 广告 - 排除 unfilled
+                const adsenseAds = document.querySelectorAll('.adsbygoogle');
+                for (let ad of adsenseAds) {
+                    const adStatus = ad.getAttribute('data-ad-status');
+                    if (adStatus !== 'unfilled') {
+                        const iframe = ad.querySelector('iframe');
+                        if (iframe && iframe.getBoundingClientRect().height > 0) {
+                            firstAd = ad;
+                            adSlot = ad.getAttribute('data-ad-slot') || 'adsense-unknown';
+                            adType = 'adsense';
+                            break;
+                        }
+                    }
                 }
             }
             
@@ -2081,22 +2118,6 @@
                 <p>Margaret turned to Marcus. &#34;Mr. Whitfield, are you satisfied with Harrison?&#34;</p>
                 <p>Men were visual creatures. Though Marcus prided himself on valuing virtue over beauty, he couldn&#39;t deny Harrison&#39;s natural elegance was intoxicating.</p>
                 <p>Even with her lack of education and career, he was willing to overlook it all.</p>
-                <!-- banner9-23329558860 - AdSense Direct -->
-                <div style='text-align:center; margin: 20px 0;'>
-                  <ins class="adsbygoogle"
-                       style="display:inline-block;width:300px;height:250px"
-                       data-ad-client="ca-pub-8799837421149750"
-                       data-ad-slot="banner9-23329558860"
-                       data-tag-src="gamtg">
-                  </ins>
-                  <script>
-                       (adsbygoogle = window.adsbygoogle || []).push({});
-                  </script>
-                </div>
-                <p>Marcus looked at Harrison earnestly. &#34;Very satisfied. Ms. Whitmore, I&#39;ll be in Willowbrook for two days. I was fortunate enough to secure an invitation to the Global Scholars Forum. I&#39;d love to take you the day after tomorrow—a chance for us to get acquainted.&#34;</p>
-                <p>When Penelope heard Marcus mention the Global Scholars Forum, her eyes lit up. She turned eagerly to Nathaniel. &#34;Mr. Falcon, I heard Westfield&#39;s prodigy will be delivering the keynote speech alongside you!&#34;</p>
-                <p>Lately, Willowbrook had been buzzing about one thing—Westfield&#39;s genius girl.</p>
-                <p>Even Margaret, who rarely left the estate, had heard the name. Victoria and Cassandra from the third branch had been inundated with gossip from their high-society circles.</p>
                 <!-- banner8-23329558860 - AdSense Direct -->
                 <div style='text-align:center; margin: 20px 0;'>
                   <ins class="adsbygoogle"
@@ -2109,18 +2130,34 @@
                        (adsbygoogle = window.adsbygoogle || []).push({});
                   </script>
                 </div>
-                <p>Everyone was obsessed with this mysterious prodigy.</p>
-                <p>No matter how accomplished Isabella and Penelope were, they paled in comparison to this girl.</p>
-                <p>Faced with sheer brilliance and academic prowess, they didn&#39;t stand a chance.</p>
-                <p>Margaret exhaled in awe. &#34;They say this Westfield genius, just like Mr. Falcon, skipped grades and earned dual master&#39;s degrees by sixteen. Another record-breaker.&#34;</p>
-                <p>Victoria shook her head. &#34;Is such a girl even real? Someone who can stand toe-to-toe with Nathaniel?&#34;</p>
-                <p>Cassandra smirked. &#34;I already secured invitations to the Global Scholars Forum. The whole family is attending. I&#39;m dying to see what this so-called genius looks like. Maybe she’s got superhuman abilities.&#34;</p>
+                <p>Marcus looked at Harrison earnestly. &#34;Very satisfied. Ms. Whitmore, I&#39;ll be in Willowbrook for two days. I was fortunate enough to secure an invitation to the Global Scholars Forum. I&#39;d love to take you the day after tomorrow—a chance for us to get acquainted.&#34;</p>
+                <p>When Penelope heard Marcus mention the Global Scholars Forum, her eyes lit up. She turned eagerly to Nathaniel. &#34;Mr. Falcon, I heard Westfield&#39;s prodigy will be delivering the keynote speech alongside you!&#34;</p>
+                <p>Lately, Willowbrook had been buzzing about one thing—Westfield&#39;s genius girl.</p>
+                <p>Even Margaret, who rarely left the estate, had heard the name. Victoria and Cassandra from the third branch had been inundated with gossip from their high-society circles.</p>
                 <!-- banner10-23329558860 - AdSense Direct -->
                 <div style='text-align:center; margin: 20px 0;'>
                   <ins class="adsbygoogle"
                        style="display:inline-block;width:300px;height:250px"
                        data-ad-client="ca-pub-8799837421149750"
                        data-ad-slot="banner10-23329558860"
+                       data-tag-src="gamtg">
+                  </ins>
+                  <script>
+                       (adsbygoogle = window.adsbygoogle || []).push({});
+                  </script>
+                </div>
+                <p>Everyone was obsessed with this mysterious prodigy.</p>
+                <p>No matter how accomplished Isabella and Penelope were, they paled in comparison to this girl.</p>
+                <p>Faced with sheer brilliance and academic prowess, they didn&#39;t stand a chance.</p>
+                <p>Margaret exhaled in awe. &#34;They say this Westfield genius, just like Mr. Falcon, skipped grades and earned dual master&#39;s degrees by sixteen. Another record-breaker.&#34;</p>
+                <p>Victoria shook her head. &#34;Is such a girl even real? Someone who can stand toe-to-toe with Nathaniel?&#34;</p>
+                <p>Cassandra smirked. &#34;I already secured invitations to the Global Scholars Forum. The whole family is attending. I&#39;m dying to see what this so-called genius looks like. Maybe she’s got superhuman abilities.&#34;</p>
+                <!-- banner7-23329558860 - AdSense Direct -->
+                <div style='text-align:center; margin: 20px 0;'>
+                  <ins class="adsbygoogle"
+                       style="display:inline-block;width:300px;height:250px"
+                       data-ad-client="ca-pub-8799837421149750"
+                       data-ad-slot="banner7-23329558860"
                        data-tag-src="gamtg">
                   </ins>
                   <script>
@@ -6569,21 +6606,23 @@
                 
                 if (isAdSense) {
                     // AdSense Direct detection
-                    // Check data-adsbygoogle-status attribute
-                    isFilled = adElement.getAttribute('data-adsbygoogle-status') === 'done';
+                    // IMPORTANT: Must check both status attributes
+                    const adsbyStatus = adElement.getAttribute('data-adsbygoogle-status');
+                    const adStatus = adElement.getAttribute('data-ad-status');
                     
-                    // Or check if iframe exists and has valid height
-                    if (!isFilled) {
+                    // Explicitly check for unfilled status - this means NO ad
+                    if (adStatus === 'unfilled') {
+                        isFilled = false;
+                    } else if (adsbyStatus === 'done' && adStatus === 'filled') {
+                        // Both status indicators show success
+                        isFilled = true;
+                    } else {
+                        // Fallback: check if iframe exists and has valid height
                         const iframe = adElement.querySelector('iframe');
                         if (iframe) {
                             const iframeRect = iframe.getBoundingClientRect();
                             isFilled = iframeRect.height > 0;
                         }
-                    }
-                    
-                    // Or check data-ad-status
-                    if (!isFilled) {
-                        isFilled = adElement.getAttribute('data-ad-status') === 'filled';
                     }
                 } else if (isGPT) {
                     // GPT ad detection (original logic)

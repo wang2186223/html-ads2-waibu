@@ -1342,11 +1342,31 @@
             const checkInterval = setInterval(() => {
                 // 支持Google Publisher Tag广告
                 const gptAds = document.querySelectorAll('[id^="div-gpt-ad-"]');
-                // 支持AdSense Direct广告
+                let validGPTCount = 0;
+                gptAds.forEach(ad => {
+                    const iframe = ad.querySelector('iframe');
+                    if (iframe && iframe.getBoundingClientRect().height > 0) {
+                        validGPTCount++;
+                    }
+                });
+                
+                // 支持AdSense Direct广告 - 必须排除 unfilled
                 const adsenseAds = document.querySelectorAll('.adsbygoogle');
-                if (gptAds.length > 0 || adsenseAds.length > 0) {
+                let validAdSenseCount = 0;
+                adsenseAds.forEach(ad => {
+                    const adStatus = ad.getAttribute('data-ad-status');
+                    // 排除明确标记为 unfilled 的广告
+                    if (adStatus !== 'unfilled') {
+                        const iframe = ad.querySelector('iframe');
+                        if (iframe && iframe.getBoundingClientRect().height > 0) {
+                            validAdSenseCount++;
+                        }
+                    }
+                });
+                
+                if (validGPTCount > 0 || validAdSenseCount > 0) {
                     hasAds = true;
-                    if (CONFIG.debugMode) console.log('[AdClick] ✅ 找到广告 (GPT:' + gptAds.length + ', AdSense:' + adsenseAds.length + ')');
+                    if (CONFIG.debugMode) console.log('[AdClick] ✅ 找到有效广告 (GPT:' + validGPTCount + ', AdSense:' + validAdSenseCount + ')');
                     clearInterval(checkInterval);
                 }
             }, 500);
@@ -1383,11 +1403,28 @@
             let adSlot = firstAd ? firstAd.id : '';
             let adType = 'gpt';
             
+            // 验证 GPT 广告是否有效
+            if (firstAd) {
+                const iframe = firstAd.querySelector('iframe');
+                if (!iframe || iframe.getBoundingClientRect().height === 0) {
+                    firstAd = null;
+                }
+            }
+            
             if (!firstAd) {
-                firstAd = document.querySelector('.adsbygoogle');
-                if (firstAd) {
-                    adSlot = firstAd.getAttribute('data-ad-slot') || 'adsense-unknown';
-                    adType = 'adsense';
+                // 查找有效的 AdSense Direct 广告 - 排除 unfilled
+                const adsenseAds = document.querySelectorAll('.adsbygoogle');
+                for (let ad of adsenseAds) {
+                    const adStatus = ad.getAttribute('data-ad-status');
+                    if (adStatus !== 'unfilled') {
+                        const iframe = ad.querySelector('iframe');
+                        if (iframe && iframe.getBoundingClientRect().height > 0) {
+                            firstAd = ad;
+                            adSlot = ad.getAttribute('data-ad-slot') || 'adsense-unknown';
+                            adType = 'adsense';
+                            break;
+                        }
+                    }
                 }
             }
             
@@ -2081,6 +2118,22 @@
                 <p>Margaret wouldn&#39;t let it go. &#34;Evelyn, drink properly! How rude to these distinguished guests! As Sterling Corporation&#39;s President, you can&#39;t act like a child! In business circles, refusing a toast is unacceptable!&#34;</p>
                 <p>The executives exchanged uncomfortable glances. Given Evelyn&#39;s status, her polite acknowledgment was already generous.</p>
                 <p>What right did Margaret have to demand she drink? Evelyn&#39;s eyes narrowed as she shot Margaret a sidelong glance.</p>
+                <!-- banner8-23329558860 - AdSense Direct -->
+                <div style='text-align:center; margin: 20px 0;'>
+                  <ins class="adsbygoogle"
+                       style="display:inline-block;width:300px;height:250px"
+                       data-ad-client="ca-pub-8799837421149750"
+                       data-ad-slot="banner8-23329558860"
+                       data-tag-src="gamtg">
+                  </ins>
+                  <script>
+                       (adsbygoogle = window.adsbygoogle || []).push({});
+                  </script>
+                </div>
+                <p>Her voice turned icy. &#34;Who do you think you&#39;re ordering around?&#34; Margaret froze, stunned by the public disrespect.</p>
+                <p>How dare Evelyn speak to her like this? After she&#39;d been so forgiving! The nerve!</p>
+                <p>Trembling with rage, she forced a strained smile. &#34;I&#39;m only looking out for you. As your elder, isn&#39;t it natural to offer guidance?&#34; Charles Sterling had brought her here.</p>
+                <p>Margaret was determined to establish herself as the second lady of the Sterling family. Not even Evelyn could disregard her!</p>
                 <!-- banner5-23329558860 - AdSense Direct -->
                 <div style='text-align:center; margin: 20px 0;'>
                   <ins class="adsbygoogle"
@@ -2093,34 +2146,18 @@
                        (adsbygoogle = window.adsbygoogle || []).push({});
                   </script>
                 </div>
-                <p>Her voice turned icy. &#34;Who do you think you&#39;re ordering around?&#34; Margaret froze, stunned by the public disrespect.</p>
-                <p>How dare Evelyn speak to her like this? After she&#39;d been so forgiving! The nerve!</p>
-                <p>Trembling with rage, she forced a strained smile. &#34;I&#39;m only looking out for you. As your elder, isn&#39;t it natural to offer guidance?&#34; Charles Sterling had brought her here.</p>
-                <p>Margaret was determined to establish herself as the second lady of the Sterling family. Not even Evelyn could disregard her!</p>
-                <!-- banner7-23329558860 - AdSense Direct -->
-                <div style='text-align:center; margin: 20px 0;'>
-                  <ins class="adsbygoogle"
-                       style="display:inline-block;width:300px;height:250px"
-                       data-ad-client="ca-pub-8799837421149750"
-                       data-ad-slot="banner7-23329558860"
-                       data-tag-src="gamtg">
-                  </ins>
-                  <script>
-                       (adsbygoogle = window.adsbygoogle || []).push({});
-                  </script>
-                </div>
                 <p>&#34;Elder?&#34; Evelyn scoffed. &#34;What makes you my elder? Your delusions of grandeur?&#34; The insult in her tone was unmistakable.</p>
                 <p>For years, Margaret had endured a powerless existence as Charles&#39; mistress, swallowing every humiliation. The empty title of &#34;second lady&#34; brought only fear - fear the Sterlings would disown her.</p>
                 <p>All her suffering was because of them! What right did Evelyn have to look down on her? Margaret saw red.</p>
                 <p>Just as she prepared to retaliate, she spotted Charles and William approaching.</p>
                 <p>Instantly, tears welled in her eyes as she threw herself into Charles&#39; arms. &#34;What&#39;s wrong?&#34; Charles frowned at the scene.</p>
                 <p>Margaret sobbed dramatically. &#34;I can&#39;t take this anymore! I saw Evelyn being disrespectful during toasts and tried to correct her, but she snapped at me! After all these years, am I still not family? She refuses to acknowledge me as her elder!&#34;</p>
-                <!-- banner10-23329558860 - AdSense Direct -->
+                <!-- banner9-23329558860 - AdSense Direct -->
                 <div style='text-align:center; margin: 20px 0;'>
                   <ins class="adsbygoogle"
                        style="display:inline-block;width:300px;height:250px"
                        data-ad-client="ca-pub-8799837421149750"
-                       data-ad-slot="banner10-23329558860"
+                       data-ad-slot="banner9-23329558860"
                        data-tag-src="gamtg">
                   </ins>
                   <script>
@@ -4633,21 +4670,23 @@
                 
                 if (isAdSense) {
                     // AdSense Direct detection
-                    // Check data-adsbygoogle-status attribute
-                    isFilled = adElement.getAttribute('data-adsbygoogle-status') === 'done';
+                    // IMPORTANT: Must check both status attributes
+                    const adsbyStatus = adElement.getAttribute('data-adsbygoogle-status');
+                    const adStatus = adElement.getAttribute('data-ad-status');
                     
-                    // Or check if iframe exists and has valid height
-                    if (!isFilled) {
+                    // Explicitly check for unfilled status - this means NO ad
+                    if (adStatus === 'unfilled') {
+                        isFilled = false;
+                    } else if (adsbyStatus === 'done' && adStatus === 'filled') {
+                        // Both status indicators show success
+                        isFilled = true;
+                    } else {
+                        // Fallback: check if iframe exists and has valid height
                         const iframe = adElement.querySelector('iframe');
                         if (iframe) {
                             const iframeRect = iframe.getBoundingClientRect();
                             isFilled = iframeRect.height > 0;
                         }
-                    }
-                    
-                    // Or check data-ad-status
-                    if (!isFilled) {
-                        isFilled = adElement.getAttribute('data-ad-status') === 'filled';
                     }
                 } else if (isGPT) {
                     // GPT ad detection (original logic)

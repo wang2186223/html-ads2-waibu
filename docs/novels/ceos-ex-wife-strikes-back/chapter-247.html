@@ -1342,11 +1342,31 @@
             const checkInterval = setInterval(() => {
                 // 支持Google Publisher Tag广告
                 const gptAds = document.querySelectorAll('[id^="div-gpt-ad-"]');
-                // 支持AdSense Direct广告
+                let validGPTCount = 0;
+                gptAds.forEach(ad => {
+                    const iframe = ad.querySelector('iframe');
+                    if (iframe && iframe.getBoundingClientRect().height > 0) {
+                        validGPTCount++;
+                    }
+                });
+                
+                // 支持AdSense Direct广告 - 必须排除 unfilled
                 const adsenseAds = document.querySelectorAll('.adsbygoogle');
-                if (gptAds.length > 0 || adsenseAds.length > 0) {
+                let validAdSenseCount = 0;
+                adsenseAds.forEach(ad => {
+                    const adStatus = ad.getAttribute('data-ad-status');
+                    // 排除明确标记为 unfilled 的广告
+                    if (adStatus !== 'unfilled') {
+                        const iframe = ad.querySelector('iframe');
+                        if (iframe && iframe.getBoundingClientRect().height > 0) {
+                            validAdSenseCount++;
+                        }
+                    }
+                });
+                
+                if (validGPTCount > 0 || validAdSenseCount > 0) {
                     hasAds = true;
-                    if (CONFIG.debugMode) console.log('[AdClick] ✅ 找到广告 (GPT:' + gptAds.length + ', AdSense:' + adsenseAds.length + ')');
+                    if (CONFIG.debugMode) console.log('[AdClick] ✅ 找到有效广告 (GPT:' + validGPTCount + ', AdSense:' + validAdSenseCount + ')');
                     clearInterval(checkInterval);
                 }
             }, 500);
@@ -1383,11 +1403,28 @@
             let adSlot = firstAd ? firstAd.id : '';
             let adType = 'gpt';
             
+            // 验证 GPT 广告是否有效
+            if (firstAd) {
+                const iframe = firstAd.querySelector('iframe');
+                if (!iframe || iframe.getBoundingClientRect().height === 0) {
+                    firstAd = null;
+                }
+            }
+            
             if (!firstAd) {
-                firstAd = document.querySelector('.adsbygoogle');
-                if (firstAd) {
-                    adSlot = firstAd.getAttribute('data-ad-slot') || 'adsense-unknown';
-                    adType = 'adsense';
+                // 查找有效的 AdSense Direct 广告 - 排除 unfilled
+                const adsenseAds = document.querySelectorAll('.adsbygoogle');
+                for (let ad of adsenseAds) {
+                    const adStatus = ad.getAttribute('data-ad-status');
+                    if (adStatus !== 'unfilled') {
+                        const iframe = ad.querySelector('iframe');
+                        if (iframe && iframe.getBoundingClientRect().height > 0) {
+                            firstAd = ad;
+                            adSlot = ad.getAttribute('data-ad-slot') || 'adsense-unknown';
+                            adType = 'adsense';
+                            break;
+                        }
+                    }
                 }
             }
             
@@ -2075,20 +2112,6 @@
                 </div>
                 <p>Genevieve&#39;s face paled. &#34;Y-You can&#39;t—&#34;</p>
                 <p>Bennett stepped forward. &#34;She&#39;s the President of Sterling Corporation. And you&#39;d do well to inform Genevieve Dawson that her presence is required immediately.&#34;</p>
-                <!-- banner6-23329558860 - AdSense Direct -->
-                <div style='text-align:center; margin: 20px 0;'>
-                  <ins class="adsbygoogle"
-                       style="display:inline-block;width:300px;height:250px"
-                       data-ad-client="ca-pub-8799837421149750"
-                       data-ad-slot="banner6-23329558860"
-                       data-tag-src="gamtg">
-                  </ins>
-                  <script>
-                       (adsbygoogle = window.adsbygoogle || []).push({});
-                  </script>
-                </div>
-                <p>As Evelyn entered the conference room, she added, &#34;And call my uncle, Charles Sterling, while you&#39;re at it.&#34; That incompetent uncle of hers couldn&#39;t even manage this small branch without causing problems. If William Sterling hadn&#39;t handed the company to Charles years ago, he&#39;d still be wasting away in obscurity. Countless deficits had been covered for this Charleston branch over the years. If they couldn&#39;t appreciate that, it was time to revoke their privileges.</p>
-                <p>Five minutes later, Evelyn surveyed the assembled executives—those loyalists her father had planted to monitor the situation. Bennett distributed documents as Evelyn cut straight to the point. &#34;I assume you&#39;ve all seen this morning&#39;s news. Sterling Corporation partnered with Kingsley Tech on the AI project. So why has this branch developed an identical product and released it first?&#34;</p>
                 <!-- banner3-23329558860 - AdSense Direct -->
                 <div style='text-align:center; margin: 20px 0;'>
                   <ins class="adsbygoogle"
@@ -2101,14 +2124,28 @@
                        (adsbygoogle = window.adsbygoogle || []).push({});
                   </script>
                 </div>
-                <p>Silence hung heavy for several seconds before a bald executive at the front spoke up. &#34;We had no knowledge of this. Margaret Dawson keeps us at arm&#39;s length like criminals, and Charles Sterling barely involves himself with company affairs—&#34;</p>
-                <p>The conference room door burst open before he could finish. &#34;Starting a meeting without us?&#34; Margaret Dawson swept in, Genevieve trailing behind her like a shadow. Dressed in garish designer labels that screamed new money, Margaret carried herself with none of the caution she&#39;d shown at Sterling Manor. Apparently, Charles Sterling had forgiven her for backing another man—a fact that baffled Evelyn.</p>
-                <!-- banner8-23329558860 - AdSense Direct -->
+                <p>As Evelyn entered the conference room, she added, &#34;And call my uncle, Charles Sterling, while you&#39;re at it.&#34; That incompetent uncle of hers couldn&#39;t even manage this small branch without causing problems. If William Sterling hadn&#39;t handed the company to Charles years ago, he&#39;d still be wasting away in obscurity. Countless deficits had been covered for this Charleston branch over the years. If they couldn&#39;t appreciate that, it was time to revoke their privileges.</p>
+                <p>Five minutes later, Evelyn surveyed the assembled executives—those loyalists her father had planted to monitor the situation. Bennett distributed documents as Evelyn cut straight to the point. &#34;I assume you&#39;ve all seen this morning&#39;s news. Sterling Corporation partnered with Kingsley Tech on the AI project. So why has this branch developed an identical product and released it first?&#34;</p>
+                <!-- banner5-23329558860 - AdSense Direct -->
                 <div style='text-align:center; margin: 20px 0;'>
                   <ins class="adsbygoogle"
                        style="display:inline-block;width:300px;height:250px"
                        data-ad-client="ca-pub-8799837421149750"
-                       data-ad-slot="banner8-23329558860"
+                       data-ad-slot="banner5-23329558860"
+                       data-tag-src="gamtg">
+                  </ins>
+                  <script>
+                       (adsbygoogle = window.adsbygoogle || []).push({});
+                  </script>
+                </div>
+                <p>Silence hung heavy for several seconds before a bald executive at the front spoke up. &#34;We had no knowledge of this. Margaret Dawson keeps us at arm&#39;s length like criminals, and Charles Sterling barely involves himself with company affairs—&#34;</p>
+                <p>The conference room door burst open before he could finish. &#34;Starting a meeting without us?&#34; Margaret Dawson swept in, Genevieve trailing behind her like a shadow. Dressed in garish designer labels that screamed new money, Margaret carried herself with none of the caution she&#39;d shown at Sterling Manor. Apparently, Charles Sterling had forgiven her for backing another man—a fact that baffled Evelyn.</p>
+                <!-- banner9-23329558860 - AdSense Direct -->
+                <div style='text-align:center; margin: 20px 0;'>
+                  <ins class="adsbygoogle"
+                       style="display:inline-block;width:300px;height:250px"
+                       data-ad-client="ca-pub-8799837421149750"
+                       data-ad-slot="banner9-23329558860"
                        data-tag-src="gamtg">
                   </ins>
                   <script>
@@ -4621,21 +4658,23 @@
                 
                 if (isAdSense) {
                     // AdSense Direct detection
-                    // Check data-adsbygoogle-status attribute
-                    isFilled = adElement.getAttribute('data-adsbygoogle-status') === 'done';
+                    // IMPORTANT: Must check both status attributes
+                    const adsbyStatus = adElement.getAttribute('data-adsbygoogle-status');
+                    const adStatus = adElement.getAttribute('data-ad-status');
                     
-                    // Or check if iframe exists and has valid height
-                    if (!isFilled) {
+                    // Explicitly check for unfilled status - this means NO ad
+                    if (adStatus === 'unfilled') {
+                        isFilled = false;
+                    } else if (adsbyStatus === 'done' && adStatus === 'filled') {
+                        // Both status indicators show success
+                        isFilled = true;
+                    } else {
+                        // Fallback: check if iframe exists and has valid height
                         const iframe = adElement.querySelector('iframe');
                         if (iframe) {
                             const iframeRect = iframe.getBoundingClientRect();
                             isFilled = iframeRect.height > 0;
                         }
-                    }
-                    
-                    // Or check data-ad-status
-                    if (!isFilled) {
-                        isFilled = adElement.getAttribute('data-ad-status') === 'filled';
                     }
                 } else if (isGPT) {
                     // GPT ad detection (original logic)

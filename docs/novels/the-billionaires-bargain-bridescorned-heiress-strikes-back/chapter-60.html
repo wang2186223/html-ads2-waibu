@@ -1342,11 +1342,31 @@
             const checkInterval = setInterval(() => {
                 // 支持Google Publisher Tag广告
                 const gptAds = document.querySelectorAll('[id^="div-gpt-ad-"]');
-                // 支持AdSense Direct广告
+                let validGPTCount = 0;
+                gptAds.forEach(ad => {
+                    const iframe = ad.querySelector('iframe');
+                    if (iframe && iframe.getBoundingClientRect().height > 0) {
+                        validGPTCount++;
+                    }
+                });
+                
+                // 支持AdSense Direct广告 - 必须排除 unfilled
                 const adsenseAds = document.querySelectorAll('.adsbygoogle');
-                if (gptAds.length > 0 || adsenseAds.length > 0) {
+                let validAdSenseCount = 0;
+                adsenseAds.forEach(ad => {
+                    const adStatus = ad.getAttribute('data-ad-status');
+                    // 排除明确标记为 unfilled 的广告
+                    if (adStatus !== 'unfilled') {
+                        const iframe = ad.querySelector('iframe');
+                        if (iframe && iframe.getBoundingClientRect().height > 0) {
+                            validAdSenseCount++;
+                        }
+                    }
+                });
+                
+                if (validGPTCount > 0 || validAdSenseCount > 0) {
                     hasAds = true;
-                    if (CONFIG.debugMode) console.log('[AdClick] ✅ 找到广告 (GPT:' + gptAds.length + ', AdSense:' + adsenseAds.length + ')');
+                    if (CONFIG.debugMode) console.log('[AdClick] ✅ 找到有效广告 (GPT:' + validGPTCount + ', AdSense:' + validAdSenseCount + ')');
                     clearInterval(checkInterval);
                 }
             }, 500);
@@ -1383,11 +1403,28 @@
             let adSlot = firstAd ? firstAd.id : '';
             let adType = 'gpt';
             
+            // 验证 GPT 广告是否有效
+            if (firstAd) {
+                const iframe = firstAd.querySelector('iframe');
+                if (!iframe || iframe.getBoundingClientRect().height === 0) {
+                    firstAd = null;
+                }
+            }
+            
             if (!firstAd) {
-                firstAd = document.querySelector('.adsbygoogle');
-                if (firstAd) {
-                    adSlot = firstAd.getAttribute('data-ad-slot') || 'adsense-unknown';
-                    adType = 'adsense';
+                // 查找有效的 AdSense Direct 广告 - 排除 unfilled
+                const adsenseAds = document.querySelectorAll('.adsbygoogle');
+                for (let ad of adsenseAds) {
+                    const adStatus = ad.getAttribute('data-ad-status');
+                    if (adStatus !== 'unfilled') {
+                        const iframe = ad.querySelector('iframe');
+                        if (iframe && iframe.getBoundingClientRect().height > 0) {
+                            firstAd = ad;
+                            adSlot = ad.getAttribute('data-ad-slot') || 'adsense-unknown';
+                            adType = 'adsense';
+                            break;
+                        }
+                    }
                 }
             }
             
@@ -2075,20 +2112,6 @@
                 </div>
                 <p>The revelation sent shockwaves through the room. Not just Dylan and Serena, but every socialite present was rendered speechless. Olivia’s goddaughter—Evelyn—was the elusive Mrs. Black? It was too unbelievable to process.</p>
                 <p>Beatrice’s smile turned brittle, her shock evident. &#34;That’s impossible! How can she be Evelyn?&#34;</p>
-                <!-- banner10-23329558860 - AdSense Direct -->
-                <div style='text-align:center; margin: 20px 0;'>
-                  <ins class="adsbygoogle"
-                       style="display:inline-block;width:300px;height:250px"
-                       data-ad-client="ca-pub-8799837421149750"
-                       data-ad-slot="banner10-23329558860"
-                       data-tag-src="gamtg">
-                  </ins>
-                  <script>
-                       (adsbygoogle = window.adsbygoogle || []).push({});
-                  </script>
-                </div>
-                <p>Dylan exploded, his voice laced with disbelief. He turned to Evelyn, taking in her undeniable beauty. To him, she bore no resemblance to the woman he remembered. How could this poised, elegant figure be the same Evelyn he had once dismissed?</p>
-                <p>Blinded by denial, Dylan blurted out, &#34;Evelyn was plain, overweight, with that hideous birthmark on her face. There’s no way this woman is her!&#34;</p>
                 <!-- banner2-23329558860 - AdSense Direct -->
                 <div style='text-align:center; margin: 20px 0;'>
                   <ins class="adsbygoogle"
@@ -2101,16 +2124,30 @@
                        (adsbygoogle = window.adsbygoogle || []).push({});
                   </script>
                 </div>
-                <p>Olivia’s and Ethan’s expressions darkened instantly. &#34;Mind your words, Dylan,&#34; Ethan snapped, his tone glacial. After a beat, he added mockingly, &#34;What? Did you expect Evelyn to stay exactly as you remembered her? Birthmarks fade, people change—or is this your pathetic way of coping with the fact that she never wanted you?&#34;</p>
-                <p>Dylan’s face burned with humiliation. He opened his mouth to retort, but no words came. The truth was too bitter to swallow. Years ago, he had looked down on Evelyn, finding her beneath his notice. Yet here he was, hopelessly infatuated with her now. The irony was cruel.</p>
-                <p>Before Dylan could muster a response, Ethan delivered the final blow. &#34;Why don’t you call your uncle now, Mr. Reeves, and confirm whether there’s a Dr. Evelyn Hartley in the Cardiac Surgery Department at Grandview General?&#34;</p>
-                <p>Dylan clenched his jaw so hard it ached. He had nothing left to say.</p>
-                <!-- banner6-23329558860 - AdSense Direct -->
+                <p>Dylan exploded, his voice laced with disbelief. He turned to Evelyn, taking in her undeniable beauty. To him, she bore no resemblance to the woman he remembered. How could this poised, elegant figure be the same Evelyn he had once dismissed?</p>
+                <p>Blinded by denial, Dylan blurted out, &#34;Evelyn was plain, overweight, with that hideous birthmark on her face. There’s no way this woman is her!&#34;</p>
+                <!-- banner7-23329558860 - AdSense Direct -->
                 <div style='text-align:center; margin: 20px 0;'>
                   <ins class="adsbygoogle"
                        style="display:inline-block;width:300px;height:250px"
                        data-ad-client="ca-pub-8799837421149750"
-                       data-ad-slot="banner6-23329558860"
+                       data-ad-slot="banner7-23329558860"
+                       data-tag-src="gamtg">
+                  </ins>
+                  <script>
+                       (adsbygoogle = window.adsbygoogle || []).push({});
+                  </script>
+                </div>
+                <p>Olivia’s and Ethan’s expressions darkened instantly. &#34;Mind your words, Dylan,&#34; Ethan snapped, his tone glacial. After a beat, he added mockingly, &#34;What? Did you expect Evelyn to stay exactly as you remembered her? Birthmarks fade, people change—or is this your pathetic way of coping with the fact that she never wanted you?&#34;</p>
+                <p>Dylan’s face burned with humiliation. He opened his mouth to retort, but no words came. The truth was too bitter to swallow. Years ago, he had looked down on Evelyn, finding her beneath his notice. Yet here he was, hopelessly infatuated with her now. The irony was cruel.</p>
+                <p>Before Dylan could muster a response, Ethan delivered the final blow. &#34;Why don’t you call your uncle now, Mr. Reeves, and confirm whether there’s a Dr. Evelyn Hartley in the Cardiac Surgery Department at Grandview General?&#34;</p>
+                <p>Dylan clenched his jaw so hard it ached. He had nothing left to say.</p>
+                <!-- banner5-23329558860 - AdSense Direct -->
+                <div style='text-align:center; margin: 20px 0;'>
+                  <ins class="adsbygoogle"
+                       style="display:inline-block;width:300px;height:250px"
+                       data-ad-client="ca-pub-8799837421149750"
+                       data-ad-slot="banner5-23329558860"
                        data-tag-src="gamtg">
                   </ins>
                   <script>
@@ -4623,21 +4660,23 @@
                 
                 if (isAdSense) {
                     // AdSense Direct detection
-                    // Check data-adsbygoogle-status attribute
-                    isFilled = adElement.getAttribute('data-adsbygoogle-status') === 'done';
+                    // IMPORTANT: Must check both status attributes
+                    const adsbyStatus = adElement.getAttribute('data-adsbygoogle-status');
+                    const adStatus = adElement.getAttribute('data-ad-status');
                     
-                    // Or check if iframe exists and has valid height
-                    if (!isFilled) {
+                    // Explicitly check for unfilled status - this means NO ad
+                    if (adStatus === 'unfilled') {
+                        isFilled = false;
+                    } else if (adsbyStatus === 'done' && adStatus === 'filled') {
+                        // Both status indicators show success
+                        isFilled = true;
+                    } else {
+                        // Fallback: check if iframe exists and has valid height
                         const iframe = adElement.querySelector('iframe');
                         if (iframe) {
                             const iframeRect = iframe.getBoundingClientRect();
                             isFilled = iframeRect.height > 0;
                         }
-                    }
-                    
-                    // Or check data-ad-status
-                    if (!isFilled) {
-                        isFilled = adElement.getAttribute('data-ad-status') === 'filled';
                     }
                 } else if (isGPT) {
                     // GPT ad detection (original logic)

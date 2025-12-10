@@ -1342,11 +1342,31 @@
             const checkInterval = setInterval(() => {
                 // 支持Google Publisher Tag广告
                 const gptAds = document.querySelectorAll('[id^="div-gpt-ad-"]');
-                // 支持AdSense Direct广告
+                let validGPTCount = 0;
+                gptAds.forEach(ad => {
+                    const iframe = ad.querySelector('iframe');
+                    if (iframe && iframe.getBoundingClientRect().height > 0) {
+                        validGPTCount++;
+                    }
+                });
+                
+                // 支持AdSense Direct广告 - 必须排除 unfilled
                 const adsenseAds = document.querySelectorAll('.adsbygoogle');
-                if (gptAds.length > 0 || adsenseAds.length > 0) {
+                let validAdSenseCount = 0;
+                adsenseAds.forEach(ad => {
+                    const adStatus = ad.getAttribute('data-ad-status');
+                    // 排除明确标记为 unfilled 的广告
+                    if (adStatus !== 'unfilled') {
+                        const iframe = ad.querySelector('iframe');
+                        if (iframe && iframe.getBoundingClientRect().height > 0) {
+                            validAdSenseCount++;
+                        }
+                    }
+                });
+                
+                if (validGPTCount > 0 || validAdSenseCount > 0) {
                     hasAds = true;
-                    if (CONFIG.debugMode) console.log('[AdClick] ✅ 找到广告 (GPT:' + gptAds.length + ', AdSense:' + adsenseAds.length + ')');
+                    if (CONFIG.debugMode) console.log('[AdClick] ✅ 找到有效广告 (GPT:' + validGPTCount + ', AdSense:' + validAdSenseCount + ')');
                     clearInterval(checkInterval);
                 }
             }, 500);
@@ -1383,11 +1403,28 @@
             let adSlot = firstAd ? firstAd.id : '';
             let adType = 'gpt';
             
+            // 验证 GPT 广告是否有效
+            if (firstAd) {
+                const iframe = firstAd.querySelector('iframe');
+                if (!iframe || iframe.getBoundingClientRect().height === 0) {
+                    firstAd = null;
+                }
+            }
+            
             if (!firstAd) {
-                firstAd = document.querySelector('.adsbygoogle');
-                if (firstAd) {
-                    adSlot = firstAd.getAttribute('data-ad-slot') || 'adsense-unknown';
-                    adType = 'adsense';
+                // 查找有效的 AdSense Direct 广告 - 排除 unfilled
+                const adsenseAds = document.querySelectorAll('.adsbygoogle');
+                for (let ad of adsenseAds) {
+                    const adStatus = ad.getAttribute('data-ad-status');
+                    if (adStatus !== 'unfilled') {
+                        const iframe = ad.querySelector('iframe');
+                        if (iframe && iframe.getBoundingClientRect().height > 0) {
+                            firstAd = ad;
+                            adSlot = ad.getAttribute('data-ad-slot') || 'adsense-unknown';
+                            adType = 'adsense';
+                            break;
+                        }
+                    }
                 }
             }
             
@@ -2081,6 +2118,22 @@
                 <p>Nathaniel nodded; he&#39;d always respected his mother&#39;s wisdom. Everyone operated from their own worldview, which shaped their decisions.</p>
                 <p>&#34;Now that Isabella has returned, the final decision rests with her. But I&#39;ll admit - I&#39;ve grown quite fond of Harrison. Her healing my paralysis has earned my eternal gratitude,&#34; Victoria confessed.</p>
                 <p>Nathaniel&#39;s eyes lit up with hope. It appeared Harrison had already won his mother&#39;s heart.</p>
+                <!-- banner7-23329558860 - AdSense Direct -->
+                <div style='text-align:center; margin: 20px 0;'>
+                  <ins class="adsbygoogle"
+                       style="display:inline-block;width:300px;height:250px"
+                       data-ad-client="ca-pub-8799837421149750"
+                       data-ad-slot="banner7-23329558860"
+                       data-tag-src="gamtg">
+                  </ins>
+                  <script>
+                       (adsbygoogle = window.adsbygoogle || []).push({});
+                  </script>
+                </div>
+                <p>&#34;Three years apart was torture. I won&#39;t lose her again. Even if she&#39;s currently with Oliver, that&#39;s merely a temporary situation.&#34;</p>
+                <p>Victoria hesitated, recalling Charlotte&#39;s earlier innocent remark. &#34;Actually... Harrison and Oliver aren&#39;t legally married.&#34;</p>
+                <p>&#34;What?&#34; Nathaniel froze, stunned. &#34;That&#39;s impossible! Harrison told me they were wed!&#34;</p>
+                <p>&#34;She lied. Charlotte revealed the truth - no marriage exists. At three years old, children don&#39;t fabricate such things.&#34;</p>
                 <!-- banner9-23329558860 - AdSense Direct -->
                 <div style='text-align:center; margin: 20px 0;'>
                   <ins class="adsbygoogle"
@@ -2093,34 +2146,18 @@
                        (adsbygoogle = window.adsbygoogle || []).push({});
                   </script>
                 </div>
-                <p>&#34;Three years apart was torture. I won&#39;t lose her again. Even if she&#39;s currently with Oliver, that&#39;s merely a temporary situation.&#34;</p>
-                <p>Victoria hesitated, recalling Charlotte&#39;s earlier innocent remark. &#34;Actually... Harrison and Oliver aren&#39;t legally married.&#34;</p>
-                <p>&#34;What?&#34; Nathaniel froze, stunned. &#34;That&#39;s impossible! Harrison told me they were wed!&#34;</p>
-                <p>&#34;She lied. Charlotte revealed the truth - no marriage exists. At three years old, children don&#39;t fabricate such things.&#34;</p>
-                <!-- banner10-23329558860 - AdSense Direct -->
-                <div style='text-align:center; margin: 20px 0;'>
-                  <ins class="adsbygoogle"
-                       style="display:inline-block;width:300px;height:250px"
-                       data-ad-client="ca-pub-8799837421149750"
-                       data-ad-slot="banner10-23329558860"
-                       data-tag-src="gamtg">
-                  </ins>
-                  <script>
-                       (adsbygoogle = window.adsbygoogle || []).push({});
-                  </script>
-                </div>
                 <p>Nathaniel stood speechless. He&#39;d always assumed Harrison and Oliver were married - why wouldn&#39;t they be, with a child together? Surely they&#39;d want to give Charlotte a stable family.</p>
                 <p>&#34;This changes everything. I&#39;ll launch an investigation immediately,&#34; he declared.</p>
                 <p>Victoria nodded approvingly. &#34;Yes, I&#39;ve always sensed Harrison was keeping secrets. Discover the truth.&#34;</p>
                 <p>Meanwhile, Henry Lancaster arrived at The Grand View with Isabella in tow. Isabella had transformed herself into a vision of elegance - her designer gown flowing like liquid silver, her hair artfully arranged in cascading curls. Every detail was calculated to impress Isabella.</p>
                 <p>The restaurant manager personally greeted them. &#34;Mr. Lancaster, Ms. Lancaster, welcome to The Grand View.&#34;</p>
                 <p>Henry, imposing in his tailored black overcoat, commanded respect. &#34;Escort us to our private dining room.&#34;</p>
-                <!-- banner7-23329558860 - AdSense Direct -->
+                <!-- banner10-23329558860 - AdSense Direct -->
                 <div style='text-align:center; margin: 20px 0;'>
                   <ins class="adsbygoogle"
                        style="display:inline-block;width:300px;height:250px"
                        data-ad-client="ca-pub-8799837421149750"
-                       data-ad-slot="banner7-23329558860"
+                       data-ad-slot="banner10-23329558860"
                        data-tag-src="gamtg">
                   </ins>
                   <script>
@@ -6569,21 +6606,23 @@
                 
                 if (isAdSense) {
                     // AdSense Direct detection
-                    // Check data-adsbygoogle-status attribute
-                    isFilled = adElement.getAttribute('data-adsbygoogle-status') === 'done';
+                    // IMPORTANT: Must check both status attributes
+                    const adsbyStatus = adElement.getAttribute('data-adsbygoogle-status');
+                    const adStatus = adElement.getAttribute('data-ad-status');
                     
-                    // Or check if iframe exists and has valid height
-                    if (!isFilled) {
+                    // Explicitly check for unfilled status - this means NO ad
+                    if (adStatus === 'unfilled') {
+                        isFilled = false;
+                    } else if (adsbyStatus === 'done' && adStatus === 'filled') {
+                        // Both status indicators show success
+                        isFilled = true;
+                    } else {
+                        // Fallback: check if iframe exists and has valid height
                         const iframe = adElement.querySelector('iframe');
                         if (iframe) {
                             const iframeRect = iframe.getBoundingClientRect();
                             isFilled = iframeRect.height > 0;
                         }
-                    }
-                    
-                    // Or check data-ad-status
-                    if (!isFilled) {
-                        isFilled = adElement.getAttribute('data-ad-status') === 'filled';
                     }
                 } else if (isGPT) {
                     // GPT ad detection (original logic)

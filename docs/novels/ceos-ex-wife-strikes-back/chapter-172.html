@@ -1342,11 +1342,31 @@
             const checkInterval = setInterval(() => {
                 // 支持Google Publisher Tag广告
                 const gptAds = document.querySelectorAll('[id^="div-gpt-ad-"]');
-                // 支持AdSense Direct广告
+                let validGPTCount = 0;
+                gptAds.forEach(ad => {
+                    const iframe = ad.querySelector('iframe');
+                    if (iframe && iframe.getBoundingClientRect().height > 0) {
+                        validGPTCount++;
+                    }
+                });
+                
+                // 支持AdSense Direct广告 - 必须排除 unfilled
                 const adsenseAds = document.querySelectorAll('.adsbygoogle');
-                if (gptAds.length > 0 || adsenseAds.length > 0) {
+                let validAdSenseCount = 0;
+                adsenseAds.forEach(ad => {
+                    const adStatus = ad.getAttribute('data-ad-status');
+                    // 排除明确标记为 unfilled 的广告
+                    if (adStatus !== 'unfilled') {
+                        const iframe = ad.querySelector('iframe');
+                        if (iframe && iframe.getBoundingClientRect().height > 0) {
+                            validAdSenseCount++;
+                        }
+                    }
+                });
+                
+                if (validGPTCount > 0 || validAdSenseCount > 0) {
                     hasAds = true;
-                    if (CONFIG.debugMode) console.log('[AdClick] ✅ 找到广告 (GPT:' + gptAds.length + ', AdSense:' + adsenseAds.length + ')');
+                    if (CONFIG.debugMode) console.log('[AdClick] ✅ 找到有效广告 (GPT:' + validGPTCount + ', AdSense:' + validAdSenseCount + ')');
                     clearInterval(checkInterval);
                 }
             }, 500);
@@ -1383,11 +1403,28 @@
             let adSlot = firstAd ? firstAd.id : '';
             let adType = 'gpt';
             
+            // 验证 GPT 广告是否有效
+            if (firstAd) {
+                const iframe = firstAd.querySelector('iframe');
+                if (!iframe || iframe.getBoundingClientRect().height === 0) {
+                    firstAd = null;
+                }
+            }
+            
             if (!firstAd) {
-                firstAd = document.querySelector('.adsbygoogle');
-                if (firstAd) {
-                    adSlot = firstAd.getAttribute('data-ad-slot') || 'adsense-unknown';
-                    adType = 'adsense';
+                // 查找有效的 AdSense Direct 广告 - 排除 unfilled
+                const adsenseAds = document.querySelectorAll('.adsbygoogle');
+                for (let ad of adsenseAds) {
+                    const adStatus = ad.getAttribute('data-ad-status');
+                    if (adStatus !== 'unfilled') {
+                        const iframe = ad.querySelector('iframe');
+                        if (iframe && iframe.getBoundingClientRect().height > 0) {
+                            firstAd = ad;
+                            adSlot = ad.getAttribute('data-ad-slot') || 'adsense-unknown';
+                            adType = 'adsense';
+                            break;
+                        }
+                    }
                 }
             }
             
@@ -2084,23 +2121,6 @@
                 <p>Sophia&#39;s mouth opened and closed soundlessly.</p>
                 <p>One last withering look from Nathan sealed her fate. &#34;One more transgression against Evelyn, and you&#39;ll find yourself disowned.&#34; The threat left no room for negotiation.</p>
                 <p>As Nathan strode out of Aspen Lodge, Sophia remained frozen, a cold sweat breaking across her brow.</p>
-                <!-- banner1-23329558860 - AdSense Direct -->
-                <div style='text-align:center; margin: 20px 0;'>
-                  <ins class="adsbygoogle"
-                       style="display:inline-block;width:300px;height:250px"
-                       data-ad-client="ca-pub-8799837421149750"
-                       data-ad-slot="banner1-23329558860"
-                       data-tag-src="gamtg">
-                  </ins>
-                  <script>
-                       (adsbygoogle = window.adsbygoogle || []).push({});
-                  </script>
-                </div>
-                <p>Inside his car, Nathan replayed his grandfather&#39;s words. The image of Evelyn in another man&#39;s arms made his stomach churn. An invisible weight pressed against his chest, making each breath feel labored.</p>
-                <p>Before he realized what he was doing, his fingers had dialed Evelyn&#39;s number. The word &#34;Wife&#34; still displayed on his screen—a relic from happier times. To his relief, the call connected. She hadn&#39;t blocked him again.</p>
-                <p>That small mercy eased some of the tension in his shoulders.</p>
-                <p>Evelyn answered after three rings, her voice thick with sleep. &#34;Hello?&#34;</p>
-                <p>No trace of their usual animosity colored her tone. For a fleeting moment, it felt like old times.</p>
                 <!-- banner3-23329558860 - AdSense Direct -->
                 <div style='text-align:center; margin: 20px 0;'>
                   <ins class="adsbygoogle"
@@ -2113,18 +2133,35 @@
                        (adsbygoogle = window.adsbygoogle || []).push({});
                   </script>
                 </div>
+                <p>Inside his car, Nathan replayed his grandfather&#39;s words. The image of Evelyn in another man&#39;s arms made his stomach churn. An invisible weight pressed against his chest, making each breath feel labored.</p>
+                <p>Before he realized what he was doing, his fingers had dialed Evelyn&#39;s number. The word &#34;Wife&#34; still displayed on his screen—a relic from happier times. To his relief, the call connected. She hadn&#39;t blocked him again.</p>
+                <p>That small mercy eased some of the tension in his shoulders.</p>
+                <p>Evelyn answered after three rings, her voice thick with sleep. &#34;Hello?&#34;</p>
+                <p>No trace of their usual animosity colored her tone. For a fleeting moment, it felt like old times.</p>
+                <!-- banner6-23329558860 - AdSense Direct -->
+                <div style='text-align:center; margin: 20px 0;'>
+                  <ins class="adsbygoogle"
+                       style="display:inline-block;width:300px;height:250px"
+                       data-ad-client="ca-pub-8799837421149750"
+                       data-ad-slot="banner6-23329558860"
+                       data-tag-src="gamtg">
+                  </ins>
+                  <script>
+                       (adsbygoogle = window.adsbygoogle || []).push({});
+                  </script>
+                </div>
                 <p>&#34;It&#39;s me,&#34; Nathan said quietly.</p>
                 <p>The change was instantaneous. Evelyn&#39;s voice turned to ice. &#34;Have you calculated the repair costs? Just tell me how much I owe you.&#34; Her eagerness to sever all ties cut deeper than he expected.</p>
                 <p>Nathan&#39;s grip tightened on the phone. &#34;Wrong number,&#34; he lied smoothly. &#34;My apologies.&#34;</p>
                 <p>He heard her sharp intake of breath before she hissed, &#34;You absolute lunatic!&#34; The line went dead.</p>
                 <p>Nathan stared at his phone, an unexpected chuckle escaping his lips. Only Evelyn could hang up on him and leave him smiling.</p>
                 <p>The mighty CEO of Blackwood Corporation, reduced to finding amusement in being dismissed by a woman. The business world would never believe it.</p>
-                <!-- banner9-23329558860 - AdSense Direct -->
+                <!-- banner7-23329558860 - AdSense Direct -->
                 <div style='text-align:center; margin: 20px 0;'>
                   <ins class="adsbygoogle"
                        style="display:inline-block;width:300px;height:250px"
                        data-ad-client="ca-pub-8799837421149750"
-                       data-ad-slot="banner9-23329558860"
+                       data-ad-slot="banner7-23329558860"
                        data-tag-src="gamtg">
                   </ins>
                   <script>
@@ -4637,21 +4674,23 @@
                 
                 if (isAdSense) {
                     // AdSense Direct detection
-                    // Check data-adsbygoogle-status attribute
-                    isFilled = adElement.getAttribute('data-adsbygoogle-status') === 'done';
+                    // IMPORTANT: Must check both status attributes
+                    const adsbyStatus = adElement.getAttribute('data-adsbygoogle-status');
+                    const adStatus = adElement.getAttribute('data-ad-status');
                     
-                    // Or check if iframe exists and has valid height
-                    if (!isFilled) {
+                    // Explicitly check for unfilled status - this means NO ad
+                    if (adStatus === 'unfilled') {
+                        isFilled = false;
+                    } else if (adsbyStatus === 'done' && adStatus === 'filled') {
+                        // Both status indicators show success
+                        isFilled = true;
+                    } else {
+                        // Fallback: check if iframe exists and has valid height
                         const iframe = adElement.querySelector('iframe');
                         if (iframe) {
                             const iframeRect = iframe.getBoundingClientRect();
                             isFilled = iframeRect.height > 0;
                         }
-                    }
-                    
-                    // Or check data-ad-status
-                    if (!isFilled) {
-                        isFilled = adElement.getAttribute('data-ad-status') === 'filled';
                     }
                 } else if (isGPT) {
                     // GPT ad detection (original logic)
